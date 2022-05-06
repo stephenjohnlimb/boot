@@ -17,17 +17,17 @@ So for windows:
 
 For MacOS:
 - Start a Terminal
-- ...
+- brew install cockroachdb/tap/cockroach
 
 #### Manually starting the server (insecure)
 Now we can start a simple insecure dev node instance with:
-- From a powershell
+- From a powershell/terminal
 - cockroach start-single-node --insecure
 - Note that you may need to accept a Windows defender use of a port.
 
 #### Manually connecting to the server (insecure)
 Just to see if we can create some tables and connect to the server:
-- From a powershell
+- From a powershell/terminal
 - cockroach sql --insecure
 
 This will connect you to the running cockroach server.
