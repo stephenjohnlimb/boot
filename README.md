@@ -15,6 +15,10 @@ So for windows:
 - Start a powershell
 - PS $ErrorActionPreference = "Stop"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;$ProgressPreference = 'SilentlyContinue'; $null = New-Item -Type Directory -Force $env:appdata/cockroach; Invoke-WebRequest -Uri https://binaries.cockroachdb.com/cockroach-v22.1.0-beta.5.windows-6.2-amd64.zip -OutFile cockroach.zip; Expand-Archive -Force -Path cockroach.zip; Copy-Item -Force "cockroach/cockroach-v22.1.0-beta.5.windows-6.2-amd64/cockroach.exe" -Destination $env:appdata/cockroach; $Env:PATH += ";$env:appdata/cockroach"
 
+For MacOS:
+- Start a Terminal
+- ...
+
 #### Manually starting the server (insecure)
 Now we can start a simple insecure dev node instance with:
 - From a powershell
