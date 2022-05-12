@@ -12,3 +12,16 @@ The next plan is to add in some simple REST and then maybe employ CockroachDb to
 
 ### Planning to use CockroachDB
 Follow this link for [details on installation](CockroachDB.md) of cockroachDB.
+
+### Java JDBC access to CockroachDB
+By adding in postgres dependency (because CockroachDb is wire compatible) we can
+access the database via JDBC. See com.tinker.jdbc.CockroachDirect.java as a quick example of this use.
+```
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+	<version>42.3.5</version>
+</dependency>
+```
+
+### Java ORM access to CockroachDB
