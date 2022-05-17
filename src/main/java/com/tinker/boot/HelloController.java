@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class HelloController {
-
 	/**
 	 * Now map for a REST GET and also time and count the calls.
 	 */

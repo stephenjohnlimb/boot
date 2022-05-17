@@ -19,8 +19,9 @@ First I'll start the server and then use a terminal based client.
 #### Manually starting the server (insecure)
 Now we can start a simple insecure dev node instance with:
 - From a powershell/terminal
-- cockroach start-single-node --insecure
+- cockroach start-single-node --insecure --http-addr=localhost:8081
 - Note that you may need to accept a Windows defender use of a port(Windows).
+- There is a web ui exposed on port 8081 in the above scenario
 
 #### Manually connecting to the server (insecure)
 Just to see if we can create some tables and connect to the server:
@@ -63,4 +64,4 @@ You should get something back like:
 ```
 
 ### That'll do for the time being
-I'll probably define a whole load of tables in the future and try using Spring JPA to access them.
+I'll probably define a whole load of tables in the future.

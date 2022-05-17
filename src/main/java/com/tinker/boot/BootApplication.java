@@ -13,9 +13,6 @@ public class BootApplication {
 	public static void main(String[] args)
 	{
 		SpringApplication.run(BootApplication.class, args);
-
-
-		System.out.println("BootApplication Finished");
 	}
 
 	/**
@@ -33,5 +30,4 @@ public class BootApplication {
 	public CountedAspect countedAspect(MeterRegistry registry) {
 		return new CountedAspect(registry);
 	}
-
 }

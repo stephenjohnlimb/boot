@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -14,12 +15,11 @@ public class CockroachORM
 {
 	public static void main(String[] args)
 	{
-		//Note we pickup the JDBC URL from the environment here.
-		//Setup the session factory and register our Account bean, this will automatically create the table
+		//Note we pick up the JDBC_DATABASE_URL from the environment here.
+		//Set up the session factory and register our Account bean, this will automatically create the table
 		//We would not normally use this, but as this a quick refresher we'll leave that as is.
 
-		try(SessionFactory sessionFactory
-						= new Configuration()
+		try(SessionFactory sessionFactory = new Configuration()
 				.configure("hibernate.cfg.xml")
 				.setProperty("hibernate.connection.url", Optional.ofNullable(System.getenv("JDBC_DATABASE_URL")).orElseThrow())
 				.addAnnotatedClass(Account.class)
@@ -31,7 +31,9 @@ public class CockroachORM
 			try(Session session = sessionFactory.openSession())
 			{
 				var result = Optional.of(session).stream().map(addAccounts()).reduce(BigDecimal.ZERO, BigDecimal::add);
-				System.out.printf("Result is %.2f\n", result);
+				System.out.printf("Result of adding accounts is %.2f\n", result);
+
+				//TODO now do some operations.
 			}
 		}
 		catch(HibernateException e)
@@ -46,11 +48,13 @@ public class CockroachORM
 	private static Function<Session, BigDecimal> addAccounts() throws JDBCException
 	{
 		return s -> {
-				s.save(new Account(1, 1000));
-				s.save(new Account(2, 250));
-				s.save(new Account(3, 314159));
-				System.out.println("APP: addAccounts()");
-			return BigDecimal.valueOf(1);
+			var accounts = List.of(
+					new Account(1, 1000),
+					new Account(2, 250),
+					new Account(3, 314159));
+
+			accounts.forEach(s::save);
+			return BigDecimal.valueOf(3);
 		};
 	}
 }
