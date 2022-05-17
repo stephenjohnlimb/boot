@@ -123,6 +123,15 @@ of a graph. But I'll move on to Grafana next and use that for graphs and alerts.
 ### Setup of a Grafana Server
 [Download Grafana](https://grafana.com/docs/grafana/latest/installation/) and follow the basic installation instructions.
 (note AWS also has a managed service for Grafana).
+Copy `sample.ini` to `custom.ini` in the `grafana\conf` directory and alter the port to use to be `http_port = 9092`.
+The default username and password is `admin` and `admin` so you can alter these; once you have logged in.
+
+Now from a powershell (Windows) you can start `Grafana` with the command:
+` ./bin/grafana-server`; then use a browser to go to 'http://localhost:9092'.
+Now you can configure up what you want.
+- Go to configuration and add a Prometheus datasource
+- Use http://localhost:9090 for that data source
+- Now follow the great documentation on [Grafana](https://grafana.com/tutorials/grafana-fundamentals/?utm_source=grafana_gettingstarted)
 
 ### Using CockroachDB
 Follow this link for [details on installation](CockroachDB.md) of cockroachDB.
