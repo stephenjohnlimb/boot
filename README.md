@@ -16,11 +16,27 @@ I've added a single **Controller** that just returns the standard "Hello, world"
 create lots of application functionality; but to touch lots of different technologies. Then actually hook them all together,
 try them all out. So it is 'full stack' in terms of technology - I may even include some _Vue.js_ later.
 
+You can now run `BootApplication` and then use a browser to access `http://localhost:8080/` where you
+will see the response `Greetings from Spring Boot!`
+
 ### Exposing metrics
 I've detailed the [steps](Metrics.md) to expose metrics out to Prometheus. This includes
 additional dependencies and what you need to do in your java code to expose metrics.
 
+With the `BootApplication` still running you can use a browser with the following URLS:
+- http://localhost:8080/actuator/health - {"status":"UP"}
+- http://localhost:8080/actuator/info - {}
+- http://localhost:8080/actuator/prometheus - { LOADS OF METRICS }
+
+But specifically in the prometheus metrics you should be able to see:
+```
+greeting_count_total{class="com.tinker.boot.HelloController",exception="none",method="index",result="success",} 1.0
+```
+If you now refresh the URL 'http://localhost:8080/' a few times you'll see the counter increase.
+
 ### Setup of a Prometheus Server
+
+TODO
 
 ### Using CockroachDB
 Follow this link for [details on installation](CockroachDB.md) of cockroachDB.

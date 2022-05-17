@@ -7,7 +7,7 @@ internal working characteristics.
 For example:
 - Number of calls
 - Duration of a call
-- 
+
 ### Dependencies
 The following dependencies need to be added in to the pom.xml first.
 
@@ -40,7 +40,7 @@ management.endpoints.web.exposure.include=health,info,prometheus
 
 ### What about the Spring code?
 I've added in some _beans_ that enable the aspects for the `micrometer`.
-There are alternatives to this approach that use annotation like `@EnablePrometheusMetrics`.
+There are alternatives to this approach that use annotations like `@EnablePrometheusMetrics`.
 
 ```
 @SpringBootApplication
