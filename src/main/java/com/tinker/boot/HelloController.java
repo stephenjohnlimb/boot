@@ -5,6 +5,8 @@ import io.micrometer.core.annotation.Timed;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Random;
+
 @RestController
 public class HelloController {
 	/**
@@ -13,7 +15,9 @@ public class HelloController {
 	@GetMapping("/")
 	@Counted(value = "greeting.count", description = "Number of times GET request is made")
 	@Timed(value = "greeting.time", description = "Time taken to return greeting")
-	public String index() {
+	public String index() throws InterruptedException
+	{
+		Thread.sleep(new Random().nextLong(1000));
 		return "Greetings from Spring Boot!";
 	}
 }
