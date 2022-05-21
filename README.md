@@ -1,5 +1,5 @@
 ## Spring Boot Example
-Well a bit more than just Spring Boot, I've pulled a number of different things I'm interested in to this project.
+Well a bit more than just Spring Boot, I've pulled a number of different things I'm interested into this project.
 
 ### Purpose
 Just a quick check of the processes in getting a Spring Boot app up running and pushed to gitHub via IntelliJ.
@@ -7,6 +7,10 @@ Now adding in AVRO and coackroachdb.
 
 But I'm also interested in monitoring and metrics so will employ Prometheus (as a store of metrics) and Grafana
 for visualisation and alerts.
+
+Never really used cucumber that much, so thought I'd bundle that in.
+It wasn't too bad; the documentation is detailed but just getting started was not that obvious.
+So I've added a little primer [here](Cucumber.md).
 
 Later I'll add in some Kafka and maybe also wrap the Spring Boot app up in a docker image.
 
