@@ -4,8 +4,8 @@ import example.avro.User;
 import io.cucumber.java8.En;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class Avro implements En {
-    public Avro() {
+public class AvroSteps implements En {
+    public AvroSteps() {
         Given("^User avro type exists$", () -> assertNotNull(Class.forName("example.avro.User")));
         When("^serialization is required$", () -> {
             var user = new User("Steve", 59, "Blue");
