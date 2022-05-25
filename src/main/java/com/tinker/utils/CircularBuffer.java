@@ -60,7 +60,7 @@ public final class CircularBuffer<T> implements Consumer<T> {
     /**
      * Clear and fully resets the buffer.
      */
-    public CircularBuffer<T> clear() {
+    public synchronized CircularBuffer<T> clear() {
         buffer = (T[]) new Object[this.capacity];
         head = 0;
         tail = -1;
@@ -73,7 +73,7 @@ public final class CircularBuffer<T> implements Consumer<T> {
         this.append(t);
     }
 
-    public CircularBuffer<T> append(T value) {
+    public synchronized CircularBuffer<T> append(T value) {
 
         tail++;
         if (tail == capacity)
@@ -96,7 +96,7 @@ public final class CircularBuffer<T> implements Consumer<T> {
      * It does not mean that is cannot accept more content.
      * @return true if all the slots in the buffer have been written to.
      */
-    public boolean isFilled() {
+    public synchronized boolean isFilled() {
         if(overwrite)
             return true;
         return (tail + head + 1) == capacity;
@@ -112,7 +112,7 @@ public final class CircularBuffer<T> implements Consumer<T> {
      *
      * @return The order list of items.
      */
-    public List<T> list() {
+    public synchronized List<T> list() {
         //If nothing added then return empty list
         if (tail == -1)
             return List.of();
