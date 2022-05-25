@@ -8,9 +8,9 @@ Now adding in AVRO and coackroachdb.
 But I'm also interested in monitoring and metrics so will employ Prometheus (as a store of metrics) and Grafana
 for visualisation and alerts.
 
-Never really used cucumber that much, so thought I'd bundle that in.
+I've never really used cucumber that much, so thought I'd bundle that in.
 It wasn't too bad; the documentation is detailed but just getting started was not that obvious.
-So I've added a little primer [here](Cucumber.md).
+So I've added a little primer [here](Cucumber.md) and included some code examples.
 
 Later I'll add in some Kafka and maybe also wrap the Spring Boot app up in a docker image.
 

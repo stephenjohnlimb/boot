@@ -84,6 +84,15 @@ public class Avro implements En {
 }
 ```
 
+### Another Example
+I've implemented a `CircularBuffer` in package `com.tinker.utils`. Quite a simple idea of a circular buffer,
+but I thought I'd do this so that I could implement some more unit tests via cucumber.
+
+The [feature](src/test/resources/features/CircularBuffer.feature) is quite simple. I have implemented
+the [cucumber tests for the circular buffer](src/test/java/features/stepDefinitions/CircularBufferSteps.java)
+in a very functional manner. I'm just trying this out as an alternative development technique, normally
+I'd just do class methods. But thought I'd try more of a functional approach to see if I like it.
+
 ### Summary
 I can see that Cucumber provides some value in terms of ensuring there is a human-readable
 definition of what you are trying to test (so better than just javadoc).
