@@ -1,4 +1,4 @@
-Feature: Splitter of in incoming values in to Lists of a specific length
+Feature: Splitting of in incoming values in to Lists of a specific length
 
   Scenario: The splitter outputs empty lists if the input is less than the split size
     Given a splitter configured to split at size 5
