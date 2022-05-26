@@ -14,6 +14,16 @@ So I've added a little primer [here](Cucumber.md) and included some code example
 
 Later I'll add in some Kafka and maybe also wrap the Spring Boot app up in a docker image.
 
+#### Creating and running the app in docker
+I thought the packaging of this application in docker might involve writing a `Docker` file; but it turns
+out that with these later versions of spring boot I can just run `mvn spring-boot:build-image`.
+
+Now assuming you have docker installed, you can then just run that docker image with the following command:
+`docker run -p 9091:8080 -t boot:0.0.1-SNAPSHOT`.
+
+You can then go to the browser on `http://localhost:9091` and see the `Greetings from Spring Boot!` message.
+
+#### This repository - what have I added and why
 This repo - contains a number of code/configuration examples from a variety of sources. I've just
 pulled out the bits I need all into one place.
 
@@ -48,7 +58,7 @@ create lots of application functionality; but to touch lots of different technol
 try them all out. So it is 'full stack' in terms of technology - I may even include some _Vue.js_ later.
 
 You can now run `BootApplication` and then use a browser to access `http://localhost:8080/` where you
-will see the response `Greetings from Spring Boot!`
+will see the response `Greetings from Spring Boot!`. Unless you are running in docker then it is `http://localhost:9090/`.
 
 ### Exposing metrics
 I've detailed the [steps](Metrics.md) to expose metrics out to Prometheus. This includes
