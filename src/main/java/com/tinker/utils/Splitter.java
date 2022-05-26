@@ -13,7 +13,7 @@ import java.util.function.Function;
  * <p>
  * Designed to work in streams processing.
  */
-public class Splitter<T> implements Function<T, SplitData<T>> {
+public final class Splitter<T> implements Function<T, SplitData<T>> {
   private int indexCount = 0;
   private final CircularBuffer<T> buffer;
 

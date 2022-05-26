@@ -10,7 +10,8 @@ import java.util.stream.Collector;
 /**
  * Thought I'd have a quick go at doing a collector.
  */
-public class HistogramCollector<T> implements Collector<T, Histogram<T>, Histogram<T>> {
+public final class HistogramCollector<T> implements Collector<T, Histogram<T>, Histogram<T>> {
+
   @Override
   public Supplier<Histogram<T>> supplier() {
     return Histogram::new;
@@ -23,10 +24,7 @@ public class HistogramCollector<T> implements Collector<T, Histogram<T>, Histogr
 
   @Override
   public BinaryOperator<Histogram<T>> combiner() {
-    return (hist1, hist2) -> {
-      hist1.getResults().putAll(hist2.getResults());
-      return hist1;
-    };
+    return (hist1, hist2) -> new Histogram<>(hist1.getResults(), hist2.getResults());
   }
 
   @Override

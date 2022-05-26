@@ -8,8 +8,19 @@ import java.util.function.Consumer;
 /**
  * Consumes incoming values and builds a histogram of the frequency of occurrences.
  */
-public class Histogram<T> implements Consumer<T> {
+public final class Histogram<T> implements Consumer<T> {
   private final HashMap<T, AtomicInteger> map = new HashMap<>();
+
+  public Histogram()
+  {
+
+  }
+
+  public Histogram(Map<T, AtomicInteger> withResults1, Map<T, AtomicInteger> withResults2)
+  {
+    map.putAll(withResults1);
+    map.putAll(withResults2);
+  }
 
   @Override
   public void accept(T t) {
@@ -19,5 +30,10 @@ public class Histogram<T> implements Consumer<T> {
 
   public Map<T, AtomicInteger> getResults() {
     return Map.copyOf(map);
+  }
+
+  @Override
+  public String toString() {
+    return map.toString();
   }
 }
