@@ -17,12 +17,20 @@ public final class Splitter<T> implements Function<T, SplitData<T>> {
   private int indexCount = 0;
   private final CircularBuffer<T> buffer;
 
+  /**
+   * Create a splitter of a specific size (must be greater than zero).
+   * @param splitSize The size the input should be split into.
+   */
   public Splitter(int splitSize) {
     if (splitSize < 1)
       throw new InvalidParameterException("SplitSize must be greater than zero");
     buffer = new CircularBuffer<>(splitSize);
   }
 
+  /**
+   * Adds the 't' to a buffer, once the buffer is full a new SplitData object is output with the content.
+   * If the buffer has not yet been filled an empty SplitData is output.
+   */
   @Override
   public synchronized SplitData<T> apply(T t) {
     buffer.accept(t);

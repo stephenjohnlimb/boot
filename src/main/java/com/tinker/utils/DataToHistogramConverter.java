@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 /**
  * Transforms SplitData into a valid HistogramData object.
+ * This is generic and so can work with any type to give a histogram.
  */
 public final class DataToHistogramConverter<T> implements Function<SplitData<T>, HistogramData<T>> {
 

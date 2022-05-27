@@ -6,6 +6,9 @@ package com.tinker.utils;
  */
 public final record HistogramData<T>(int index, Histogram<T> content) {
 
+  /**
+   * Checks if the contents of a histogram content match.
+   */
   @Override
   public boolean equals(Object o) {
     if(o instanceof HistogramData<?> histogramData)

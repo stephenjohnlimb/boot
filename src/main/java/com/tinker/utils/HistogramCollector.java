@@ -9,6 +9,8 @@ import java.util.stream.Collector;
 
 /**
  * Thought I'd have a quick go at doing a collector.
+ * <p>
+ * Very useful in enabling a streamed type creation of a Histogram.
  */
 public final class HistogramCollector<T> implements Collector<T, Histogram<T>, Histogram<T>> {
 
