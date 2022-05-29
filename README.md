@@ -49,6 +49,17 @@ One of the main advantages of publishing a 'specification' of your data structur
 [PACT](https://pact.io/) this formalises the relationship between the _provider_ and the _consumer_ of the
 of data that must conform to that specification.
 
+### Lambdas
+I've also tinkered around with a bit of tail recursion (because i found that interesting).
+See [TailCall](src/main/java/com/tinker/tailrecursion/TailCall.java) and
+[TailFactorial](src/main/java/com/tinker/tailrecursion/TailFactorial.java).
+
+There are also a few other more functional examples in conjunction with the cucumber examples.
+There is a:
+- Circular Buffer
+- Data Splitter
+- Anagram Detector
+
 ### Spring
 Used [Spring initializr](https://start.spring.io/) to create a simple app, could have used a maven archetype, or just done it all by hand.
 
@@ -58,7 +69,7 @@ create lots of application functionality; but to touch lots of different technol
 try them all out. So it is 'full stack' in terms of technology - I may even include some _Vue.js_ later.
 
 You can now run `BootApplication` and then use a browser to access `http://localhost:8080/` where you
-will see the response `Greetings from Spring Boot!`. Unless you are running in docker then it is `http://localhost:9090/`.
+will see the response `Greetings from Spring Boot!`. Unless you are running in docker then it is `http://localhost:9091/`.
 
 ### Exposing metrics
 I've detailed the [steps](Metrics.md) to expose metrics out to Prometheus. This includes
