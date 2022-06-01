@@ -27,7 +27,7 @@ public class ConsumerUserPactTest {
     //here we are stating that the consumer will need these fields, even though more fields can and do
     //exist we are not using them. That's the PACT.
     return builder
-            .expectsToReceive("valid data from kafka provider")
+            .expectsToReceive("a valid data from kafka provider")
             .withContent(LambdaDsl.newJsonBody(lambdaDslJsonBody -> {
               lambdaDslJsonBody.stringType("name");
               lambdaDslJsonBody.numberType("favorite_number");
