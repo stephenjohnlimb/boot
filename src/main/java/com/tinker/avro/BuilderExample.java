@@ -124,6 +124,10 @@ public final class BuilderExample {
             .orElseThrow();
   }
 
+  public GenericRecord populateUser(final String name) {
+    return populateUser(addValue.apply("name", name));
+  }
+
   public GenericRecord populateUser(final String name, final int favouriteNumber, final String favouriteColor) {
     Map<String, Object> toUpdate = Map.of(
             "name", name,

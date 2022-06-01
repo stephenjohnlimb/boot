@@ -53,6 +53,9 @@ public class UserTest {
       assertEquals("Steve", deserialized.getName().toString());
       assertEquals(59, deserialized.getFavoriteNumber());
       assertEquals("blue", deserialized.getFavoriteColor().toString());
+
+      System.out.println(underTest.populateUser("Steve"));
+
     } catch (IOException ioex) {
       fail(ioex);
     }
