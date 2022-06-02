@@ -64,6 +64,5 @@ public class TailFactorial {
         final BigInteger notTooLarge = BigInteger.valueOf(20000);
         result = calculate(notTooLarge);
         System.out.printf("Factorial of %d is %d\n", notTooLarge, result);
-
     }
 }

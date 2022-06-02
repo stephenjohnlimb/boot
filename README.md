@@ -3,7 +3,7 @@ Well a bit more than just Spring Boot, I've pulled a number of different things 
 
 ### Purpose
 Just a quick check of the processes in getting a Spring Boot app up running and pushed to gitHub via IntelliJ.
-Now adding in AVRO and coackroachdb.
+Now adding in AVRO and cockroachdb.
 
 But I'm also interested in monitoring and metrics so will employ Prometheus (as a store of metrics) and Grafana
 for visualisation and alerts.
@@ -59,6 +59,12 @@ There is a:
 - Circular Buffer
 - Data Splitter
 - Anagram Detector
+
+I've added a little [example of memoization](src/main/java/com/tinker/memoization) and also some
+examples of how to refactor to 'separate concerns', to make the memoization a reusable generic class.
+
+The example is from a Lambdas book on Java Functional programming, but I've done the refactoring in stages so that
+it is a bit easier to see how to get from one implementation to another.
 
 ### Spring
 Used [Spring initializr](https://start.spring.io/) to create a simple app, could have used a maven archetype, or just done it all by hand.
