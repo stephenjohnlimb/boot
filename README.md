@@ -14,9 +14,15 @@ So I've added a little primer [here](Cucumber.md) and included some code example
 
 Later I'll add in some Kafka and maybe also wrap the Spring Boot app up in a docker image.
 
+See [K8s on how I've started with MicroK8s](K8s.md), there are lots of other alternatives; but this is the one
+I've picked to have a go with.
+
+So this project is a bit of a random wandering around technologies I'm interested in.
+
 #### Creating and running the app in docker
 I thought the packaging of this application in docker might involve writing a `Docker` file; but it turns
 out that with these later versions of spring boot I can just run `mvn spring-boot:build-image`.
+But goodness, me is the image that is produced **big**.
 
 Now assuming you have docker installed, you can then just run that docker image with the following command:
 `docker run -p 9091:8080 -t boot:0.0.1-SNAPSHOT`.
@@ -37,6 +43,7 @@ So here are the credits (if I've missed anyone let me know; and I'll add the att
 - [TutorialWorks](https://www.tutorialworks.com/spring-boot-prometheus-micrometer/)
 - [Robin Hillier](https://medium.com/thg-tech-blog/removing-cross-cutting-concerns-with-micrometer-and-spring-aop-916a5602770f)
 - [Grafana](https://grafana.com/docs)
+- [Ubuntu tutorials](https://ubuntu.com/tutorials)
 
 ### AVRO
 Basically AVRO is just a mechanism for defining structured data, see
@@ -50,21 +57,32 @@ One of the main advantages of publishing a 'specification' of your data structur
 of data that must conform to that specification.
 
 ### Lambdas
-I've also tinkered around with a bit of tail recursion (because i found that interesting).
-See [TailCall](src/main/java/com/tinker/tailrecursion/TailCall.java) and
-[TailFactorial](src/main/java/com/tinker/tailrecursion/TailFactorial.java).
-
-There are also a few other more functional examples in conjunction with the cucumber examples.
-There is a:
-- Circular Buffer
-- Data Splitter
-- Anagram Detector
+I've also tinkered around with a bit of tail recursion (because I found that interesting).
+See:
+- [TailCall](src/main/java/com/tinker/tailrecursion/TailCall.java)
+- [TailFactorial](src/main/java/com/tinker/tailrecursion/TailFactorial.java)
 
 I've added a little [example of memoization](src/main/java/com/tinker/memoization) and also some
 examples of how to refactor to 'separate concerns', to make the memoization a reusable generic class.
 
 The example is from a Lambdas book on Java Functional programming, but I've done the refactoring in stages so that
 it is a bit easier to see how to get from one implementation to another.
+
+I found a bit of code on [memoization](src/main/java/com/tinker/memoization/MemoisedRodCutter.java)
+and then implemented a [recursive only](src/main/java/com/tinker/memoization/SimpleRecursionRodCutter.java) version.
+
+So I then thought I'd show a progression of moving from the _recursive only_ version through to a _memoized version_.
+This includes moving from an implementation that has the calculations and the memoization all jumbled up together,
+through to separating the concerns, making more _functional_ and also extracting the memoization part to be reusable
+in **generic** form. This starts with [SimpleRecursionRodCutter](src/main/java/com/tinker/memoization/SimpleRecursionRodCutter.java)
+and moves through [DevelopedRodCutter 2, 3, 4, 5, 6](src/main/java/com/tinker/memoization/DevelopedRodCutter.java) you can also
+see the introduction and evolution of [MemoizerForPhase4, 5, 6](src/main/java/com/tinker/memoization/MemoizerForPhase4.java).
+
+There are also a few other more functional examples in conjunction with the cucumber examples.
+There is a:
+- Circular Buffer
+- Data Splitter
+- Anagram Detector
 
 ### Spring
 Used [Spring initializr](https://start.spring.io/) to create a simple app, could have used a maven archetype, or just done it all by hand.
