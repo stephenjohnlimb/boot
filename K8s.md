@@ -65,6 +65,13 @@ function s {
 
 ```
 
+On Windows you will get some additional entries in `C:\WINDOWS\System32\drivers\etc\hosts.ics`:
+```
+172.19.167.170 microk8s-vm.mshome.net # 2022 6 3 15 9 49 33 141
+172.19.161.255 primary.mshome.net # 2022 6 3 15 9 49 33 135
+```
+These will be based on the virtual machine names you employed.
+
 #### Set up on MacOs
 Just follow the instructions in [this link](https://ubuntu.com/tutorials/install-microk8s-on-mac-os), again this
 uses virtualization and employs multipass and microk8s.
@@ -166,4 +173,88 @@ So now if you have a session on `primary` you can just use:
 kubectl get pods
 #or if you have put  alias k='kubectl' in your .bashrc
 k get pods
+```
+
+#### Basic kubectl concepts and commands
+When a Kubernetes _cluster_ is created it is created with a number of **nodes** these are the 'machines' that
+will actually run your applications (microservices).
+
+When you do your application builds and then package your application into an 'image/container' (maybe a docker image), it
+has your application but also a thin layer of operating system and additional components you configured.
+
+For `kubectl` to be able to manipulate and configure actions within the kubernetes _cluster_ that _cluster_ needs
+what is called a _control plane_.
+
+This _control plane_ communicates with software running on the **node**; that is called a 'Kubelet'.
+
+Finally, a number of 'images/containers' can be bundled and placed into a **pod**, that **pod** is then deployed on
+one or more **nodes**. Now your application can actually run. It is also possible to create **namespaces** for the
+**pods** to run in.
+
+Those applications can then be exposed via **services** which expose ports in a configurable manner.
+
+Now the basic `kubectl` commands involved in getting information about the above cluster concepts.
+
+```
+# View the kubernetes configuration
+kubectl config view
+
+# A quick overview of the cluster
+kubectl get all
+
+# Show the nodes employed in a cluster
+kubectl get nodes
+
+# For lots of detail on loading of a node (in this case microk8s-vm)
+kubectl describe nodes microk8s-vm
+
+# Resource use by a specific node
+kubectl top node microk8s-vm
+ 
+# Show all the pods that are running in all namespaces
+# For microk8s with a number of services this will show
+# container-registry, default, kube-system, linkerd, monitoring
+kubectl get pods --all-namespaces
+
+# You can get more information about the 
+kubectl get pods -o wide
+
+# You can query based on labels
+kubectl get pods --show-labels
+
+# Then get the pod you are looking for
+kubectl get pods --selector=app=spring-boot
+
+# It is possible get loads of deployment pod details
+# In this case for a pod based on a previous deployment of a spring-boot application
+kubectl get pod spring-boot-5dcb4777d7-bq2ks -o yaml
+
+# To get lots of details on a running pod
+kubectl describe pods spring-boot-5dcb4777d7-bq2ks
+
+# Now services
+kubectl get services
+
+```
+
+Some additional `kubectl` commands that will be useful:
+```
+# Get the logs out of a pod - remember kubectl get pods --selector=app=spring-boot
+# Will give you the full pod name.
+kubectl logs spring-boot-5dcb4777d7-bq2ks
+
+# To keep 'following' the logs
+kubectl logs -f spring-boot-5dcb4777d7-bq2ks
+
+# To execute a command on a pod
+kubectl exec spring-boot-5dcb4777d7-bq2ks -- ls /
+
+If you really need a bash session on a pod
+kubectl exec --stdin --tty spring-boot-5dcb4777d7-bq2ks -- /bin/bash
+
+# Or if you want to copy a file onto a pod (called junk here)
+kubectl cp junk spring-boot-5dcb4777d7-bq2ks:/tmp
+
+# To get loads of infor out about the cluster
+kubectl cluster-info dump
 ```
