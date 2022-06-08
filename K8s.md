@@ -2,33 +2,33 @@
 
 Why even use Kubernetes? Well if you don't really to; **don't**! But the minute you get a
 number of separate (truly separately deployable) services. Have several _teams_ working on
-each service in a **devops** manner; by this I mean, that teams that consist of a full stack capability (and this
-includes monitoring and owning the running service). Then you're going to have lots of these services and
+each service in a **devops** manner; by this I mean that teams that consist of a full stack capability. This
+includes monitoring and owning the running service. Then you're going to have lots of these services and
 will need to have somewhere to deploy them.
 
 This only really works well **at scale**. So the main benefit is not always that the live deployment of a containerized
-scales (which it does); but that the development process can scale.
+application scales (which it does); but that the development process can scale.
 
-But testing and proving interfaces are compatible is key. That's why I've looked into PACT, because while an interface
-may be compatible, experience shows that you need a degree of fluidity. By this I mean XML XSD schemas are a little too
-firm, even JSON 'schemas' are. What PACT focuses on, is what is actually used in terms of the data exchange.
+But testing and proving interfaces are compatible with this model is key. That's why I've looked into PACT.
+While an interface may be compatible, experience shows that you need a degree of fluidity. By this I mean XML XSD
+schemas are a little too firm, as are JSON 'schemas'.
+What PACT focuses on, is what is actually used in terms of the data exchange.
 So you can ship more information in a data structure and not break the interface.
 
 ### MicroK8S
 
 But as I plan to do some work with kubernetes; I'll have a go with [microk8s on windows](https://ubuntu.com/tutorials/install-microk8s-on-window)
-and [microk8s on MacOS](https://ubuntu.com/tutorials/install-microk8s-on-mac-os).
+and [microk8s on MacOS](https://ubuntu.com/tutorials/install-microk8s-on-mac-os). There are other
+solutions like minikube and k3s, but I thought I'd have a go with microk8s.
 
 But to do this you need to remember that Kubernetes is really very linux focussed. First, we need to really
-give ourselves the ability and knowledge to work with linux virtual machines. So quite a bit of the focus here is on
-Multipass.
-
-To see the config for microk8s just use `microk8s config`.
+give ourselves the ability and knowledge to work with linux virtual machines.
+So quite a bit of the initial focus here is on Multipass.
 
 #### Set up on Windows
 Just follow the instructions in [this link](https://ubuntu.com/tutorials/install-microk8s-on-window).
 
-Microk8s on Windows and MacOs both use **Multipass** so in short it uses virtualization to set up an Ubuntu
+Microk8s on Windows and MacOs both use **Multipass**; so in short it uses virtualization to set up an Ubuntu
 machine with Microk8s on it. It also adds in a few commands on your host machine (either Windows or Mac).
 These are:
 - multipass
@@ -38,10 +38,18 @@ So to get a shell session on your microk8s-vm you can use the following command:
 - multipass shell microk8s-vm
 
 To issue kubectl commands from your host you must use:
-- microk8s kubctl ...
+- microk8s kubectl ...
 
 Now to get around that endless typing you can adopt aliases or functions in powershell (Windows).
 Here are the functions I use (very short 'k', 'p' and 's').
+Aliases (for bash):
+```
+alias k='microk8s kubectl'
+alias p='multipass shell primary'
+alias s='multipass shell microk8s-vm'
+```
+
+Powershell functions (if you want to stay in powershell rather than use bash):
 ```
 function k {
 	microk8s kubectl @args
@@ -61,7 +69,7 @@ function s {
 Just follow the instructions in [this link](https://ubuntu.com/tutorials/install-microk8s-on-mac-os), again this
 uses virtualization and employs multipass and microk8s.
 
-Again you can just use `aliases` to shorten the commands above.
+Again you can just use `aliases` to shorten the commands above and put them in your `.bashrc`.
 
 #### Common multipass commands
 It is very useful to be able to mount a local filesystem from the host into the virtual machine. This can be done
@@ -88,13 +96,14 @@ multipass delete primary
 multipass purge
 ```
 
-You can list the virtual machines you have and their IP addresses with:
+You can list the virtual machines you have and their IP addresses (these change on restarts) with:
 ```
 multipass list
 ```
 
 #### Using Docker in 'primary'
-Let's say you want to build docker images from within your 'primary' vm. You can do that by installing docker.
+Let's say you want to build docker images from within your 'primary' vm.
+You can do that by installing docker or buildAh etc.
 ```
 sudo apt-get install docker
 sudo usermod -a -G docker ubuntu
