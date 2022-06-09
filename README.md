@@ -15,7 +15,10 @@ So I've added a little primer [here](Cucumber.md) and included some code example
 Later I'll add in some Kafka and maybe also wrap the Spring Boot app up in a docker image.
 
 See [K8s on how I've started with MicroK8s](K8s.md), there are lots of other alternatives; but this is the one
-I've picked to have a go with.
+I've picked to have a go with. All of this information is available in and around the internet, I'm mainly documenting
+this for me. I find the process of writing and explaining how all this hangs together very useful for learning.
+It also provides me with a reference for the future as I use lots of different technologies some become stale through
+lack of use.
 
 So this project is a bit of a random wandering around technologies I'm interested in.
 

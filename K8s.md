@@ -6,6 +6,9 @@ each service in a **devops** manner; by this I mean that teams that consist of a
 includes monitoring and owning the running service. Then you're going to have lots of these services and
 will need to have somewhere to deploy them.
 
+Also as a developer, you may need to lots of addition 'stuff' running so that you can actually try your code out.
+The more you need to have running, the more likely you will need some form of container to put it all in.
+
 This only really works well **at scale**. So the main benefit is not always that the live deployment of a containerized
 application scales (which it does); but that the development process can scale.
 
@@ -110,6 +113,9 @@ multipass list
 
 #### Using Docker in 'primary'
 Let's say you want to build docker images from within your 'primary' vm.
+
+There is a separate [set of examples that show building and deploying a container](BuildAndDeployAContainer.md).
+
 You can do that by installing docker or buildAh etc.
 ```
 sudo apt-get install docker
@@ -121,7 +127,7 @@ multipass mount src primary:/home/ubuntu/src
 multipass shell primary
 
 # Now navigate to where you have a docker file and trigger a build
-# For example just an alpine image with a bit of s6 overlay
+# There is a full worked example of this in the link above.
 docker build -t just-alpine .
 docker images
 
@@ -137,16 +143,23 @@ sudo apt install maven
 This means that you can actually do full builds with files from your workspace but actually in an ubuntu virtual machine.
 For example:
 ```
+cd ~/src/boot
 sh ./mvnw spring-boot:build-image
 ```
 Assuming your project has the mvnw wrapper, you can then do a full build of a spring boot app and get a docker image out,
-directly.
+directly. I'm not sure that I'm that keen on this spring-boot image building process, seems a bit 'magic' and also
+seems to be pulling down the known world to do a build.
 
+## Kubectl
+This next part is really all about `kubectl` - this is just a short list of the command options, it really is a bit
+of a beast. But then Kubernetes has a number of aspects to it that need managing.
+
+I've tried to put the commands in some sort of order that is logical to me.
 
 #### Common kubectl commands and setup
 
-Clearly with microk8s you can use the `microk8s kubectl` command directly from the host, but
-if you want to use kubectl from within a fairly current ubuntu, you can just use the following:
+Clearly with microk8s you can use the `microk8s kubectl` command directly from the host (I use aliases or functions),
+but if you want to use kubectl from within a fairly current ubuntu, you can just use the following:
 
 ```
 sudo snap install kubectl --classic
@@ -154,11 +167,11 @@ sudo snap install kubectl --classic
 
 But how does that specific virtual machine (host) with kubectl 'know' which kubernetes cluster to look at and work with?
 
-It is necessary to set up a `~/.kube/config` file (normally in your home directory). But what content?
+It is necessary to set up a `~/.kube/config` file. But what content?
 Use the command `microk8s config` from your host machine, then save that content in `~/.kube/config`.
 You'll need update this as and when you restart the microk8s virtual machine.
 
-So typically from your host and a vm called `primary` you can use:
+So typically from your host and a vm called `primary` you can use this command:
 
 ```
 microk8s config | multipass transfer - primary:.kube/config
@@ -180,12 +193,12 @@ kubectl get pods
 k get pods
 ```
 
-#### Basic kubectl concepts and commands
+### Basic Kubernetes concepts
 
 When a Kubernetes _cluster_ is created it is created with a number of **nodes** these are the 'machines' that
 will actually run your applications (microservices).
 
-When you do your application builds and then package your application into an 'image/container' (maybe a docker image), it
+When you do your application builds and  package your application into an 'image/container' (maybe a docker image), it
 has your application but also a thin layer of operating system and additional components you configured.
 
 For `kubectl` to be able to manipulate and configure actions within the kubernetes _cluster_ that _cluster_ needs
@@ -201,15 +214,17 @@ It is the **deployment** that defines the characteristics of how a pod behaves.
 
 Those applications can then be exposed via **services** which expose ports in a configurable manner.
 
-You can get command line completion when using bash with:
+You can get `kubectl` command line completion when using bash with:
 ```
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 ```
 
+#### Some Kubectl commands
+
 Now the basic `kubectl` commands involved in getting information about the above cluster concepts.
 
 ```
-# View the kubernetes configuration
+# To view the kubernetes configuration
 kubectl config view
 
 # A quick overview of the cluster
@@ -223,13 +238,16 @@ kubectl describe nodes microk8s-vm
 
 # Resource use by a specific node
 kubectl top node microk8s-vm
+
+# List out all the name spaces
+kubectl get namespaces --show-labels
  
 # Show all the pods that are running in all namespaces
 # For microk8s with a number of services this will show
 # container-registry, default, kube-system, linkerd, monitoring
 kubectl get pods --all-namespaces
 
-# You can get more information about the 
+# You can get more information about the pod with the following
 kubectl get pods -o wide
 
 # You can query based on labels
@@ -250,11 +268,25 @@ kubectl get services
 
 ```
 
+So take stock of those commands above, they focus on:
+- Overall configuration
+- The Nodes
+- The Pods
+- The Services
+
+To recap.
+- Nodes are the machine stuff runs on.
+- Pods have one or more containers/images running in them
+- Services expose the applications in the images running in pods on the nodes via TCP ports.
+
+
+#### Some Kubectl commands more focused on runtime
+
 Some additional `kubectl` commands that will be useful, these are more for run time.
 
 ```
 # Get the logs out of a pod - remember kubectl get pods --selector=app=spring-boot
-# Will give you the full pod name.
+# Will give you the full pod name - used below.
 kubectl logs spring-boot-5dcb4777d7-bq2ks
 
 # To keep 'following' the logs
@@ -269,7 +301,7 @@ kubectl exec --stdin --tty spring-boot-5dcb4777d7-bq2ks -- /bin/bash
 # Or if you want to copy a file onto a pod (called junk here)
 kubectl cp junk spring-boot-5dcb4777d7-bq2ks:/tmp
 
-# To get loads of infor out about the cluster
+# To get loads of info out about the cluster
 kubectl cluster-info dump
 ```
 
@@ -281,6 +313,10 @@ kubectl cordon microk8s-vm
 # Drain of all processing ready to take off line
 kubectl drain microk8s-vm
 ```
+## Working with Images and Microk8s
+
+I have done a more complete and full [worked example](BuildAndDeployAContainer.md) of working with images and
+deploying them in microk8s. But here is a short primer first.
 
 ### One way of getting images into microk8s
 
@@ -351,7 +387,11 @@ You will need to edit the `/etc/docker/daemon.json` file and add the following:
 }
 ```
 
-Then restart docker `sudo systemctl restart docker`.
+Then restart docker and push again:
+```
+sudo systemctl restart docker
+docker push 172.19.167.170:32000/nginx:1.22
+```
 
 Now clearly if you used 'Kaniko' or 'BuildAh' you may not have these issues (you may have different ones).
 
@@ -373,3 +413,234 @@ microk8s ctr help
 microk8s ctr images ls
 
 ```
+
+#### Deploying that image
+Here is a quick command line to deploy that nginx image we pushed from a local docker repository in
+**primary** into **microk8s-vm** registry.
+
+But this time I'm also going to expose the running application as a service.
+
+On the **primary** vm we set up earlier you can use the following commands:
+```
+# Remember this is kubectl talking with the control plan inside kubernetes on microk8s-vm
+# So localhost:32000 is actually inside microk8s-vm i.e. its local registry
+kubectl create deployment nginx-try --image=localhost:32000/nginx:1.22
+
+#Now check if that image is running in a pod on a node
+kubectl get pods
+
+# Or just check that pod
+kubectl get pods --selector=app=nginx-try
+
+# Get full details
+kubectl describe pods nginx-try-5697dbcbf5-vvmzx
+
+# A bit more detail about that deployment
+kubectl describe deployments nginx-try
+
+# We can now expose this running pod as a service
+kubectl expose deployment nginx-try --port 9095 --target-port 80 --selector app=nginx-try --type NodePort --name nginx-service
+
+#Now lets have a look at that service
+kubectl get services
+
+# You should see something like:
+# nginx-service   NodePort    10.152.183.182   <none>        9095:31145/TCP   3s
+```
+
+So now, not only is the image running in a pod on a node, we have also exposed the nginx port of **80** on port 9095.
+But also via host port 31145!
+
+**So what does this mean? How can I see something**
+
+OK, let's recap again.
+- We've taken nginx version 1.22 and pushed into microk8s registry
+- We've then created a simple deployment called **nginx-try** and run that up in a pod
+- This means that nginx in that pod is listening on port 80 (that's how it was build by the developer)
+- Now by using **kubectl expose deployment nginx-try** we've exposed port 80.
+- The important bits here are **--port 9095 --target-port 80** and **type NodePort**
+- Finally, we give it a name of **nginx-service**
+
+You may be expecting to be able to go to your local host browser and enter:
+- _http://localhost:80_
+- Or _http://localhost:9095_
+
+Or something like that, but no I'm afraid not. It's a bit more complex than that.
+Kubernetes has its own internal networking stuff going on. So lets un pick it a bit.
+
+Here is an example from my machine.
+```
+# Lets get the services
+kubectl get services
+
+# NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+# kubernetes      ClusterIP   10.152.183.1     <none>        443/TCP          2d23h
+= nginx-service   NodePort    10.152.183.182   <none>        9095:31145/TCP   3s
+```
+
+So now if I get a bash session on `microk8s-vm` (that's where Kubernetes is running), now I can see if
+I can see the nginx welcome page. For this I need to use the `CLUSTER-IP` of **10.152.183.182**, this will
+be available to me in the Kubernetes cluster (but only withing that cluster).
+
+Now I can try a `curl http://10.152.183.182:9095` and I get this:
+```
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+So success, if I was wiring lots of services together I'd be good to go. But as I used **type NodePort**
+I have actually asked Kubernetes to expose this out to the host. For this Kubernetes has used a dynamic port number
+(in this case 31145).
+
+So you are probably thinking great, _http://localhost:31145_ will now work. Well **NO**, that's because I'm running
+microk8s-vm inside a virtual machine via multipass.
+
+Now that virtual machine currently has an IP address of **172.19.167.170** so to use a local browser and see the same
+content that was served from within the Kubernetes cluster I need to use:
+- http://172.19.167.170:31145/
+
+**Finally, success!**
+
+One of the important bits here is deciding **how** you would like to _expose_ the node, this is done with **type**
+on the `kubectl expose` command, this can be **LoadBalancer, ClusterIP** or **NodePort**.
+
+To remove the exposed service use:
+```
+kubectl delete services nginx-service
+```
+
+This will leave the pod running, but just remove the exposure.
+
+Lots more [details here](https://kubernetes.io/docs/concepts/services-networking/connect-applications-service/).
+
+## Namespaces
+So far I've only deployed images/containers to pods in the **default** namespace, you can check what namespaces
+have been defined with `kubectl get namespaces --show-labels`. There is more than just **default**, but those are used
+by microk8s and some of the add-ons that have been enabled.
+
+Lets create a **test** namespace.
+```
+# Create the namespace
+kubectl create namespace test
+ 
+# Get the current context
+kubectl config view
+
+# This will report microk8s
+kubectl config current-context
+
+# Now make a new context 
+kubectl config set-context test --namespace=test --cluster=microk8s-cluster --user=admin
+
+# Now if you look again you will see an additional context has been created.
+kubectl config view
+
+# Use that context
+kubectl config use-context test
+
+# This means we're now using the test namespace in the text context
+# this will show now pods running - as we are in the test context
+kubectl get pods
+
+# If you flip back to use microk8s
+kubectl config use-context microk8s
+# You will see that nginx pod running that we deployed earlier
+kubectl get pods
+
+# Flip back again
+kubectl config use-context test
+
+# Now use same command to deploy and expose the nginx container as we did in the 'default' namespace
+kubectl create deployment nginx-try --image=localhost:32000/nginx:1.22
+kubectl expose deployment nginx-try --port 9095 --target-port 80 --selector app=nginx-try --type NodePort --name nginx-service
+
+# Lets list the service in out test namespace
+kubectl get services
+
+# NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+# nginx-service   NodePort   10.152.183.89   <none>        9095:31169/TCP   25s
+
+# Again we can check that service is exposed on http://172.19.167.170:31169/
+ 
+```
+
+So, it is quite easy to create new namespaces, then set your `kubectl` to work with a specific context.
+This is quite nice, as it means you can set yourself up and just work with a specific namespace with ease.
+
+You're probably thinking, but how can I set up communication between namespaces and what about DNS.
+
+#### Kube DNS
+As soon as you expose your deployment of pods as a 'service' in our case above _nginx-service_, Kubernetes
+will create a DNS entry for that service. Kubernetes then deals with traffic coming into that service and
+distributes it to one the pods that runs on one of your nodes.
+
+So from within the Kubernetes cluster you have a build-in DNS mechanism (within your namespace), just
+use the service name you gave your service.
+
+Now to address services in other namespaces (decide if that's a good or a bad idea yourself), you can
+just append the namespace to the service name.
+For example:
+```
+# Assuming you have 'test' as your default context lets get a session on to a pod
+kubectl get pods
+
+# nginx-try-5697dbcbf5-n7g55   1/1     Running   0          18m
+
+# get bash session on the pod
+kubectl exec --stdin --tty nginx-try-5697dbcbf5-n7g55 -- /bin/bash
+
+# Now lets make that curl call to nginx running in the default namespace (not this test namespace)
+curl http://nginx-service.default:9095
+
+# You should get the normal nginx welcome HTML response.
+```
+
+Now I'll just tidy up and remove that service and deployment from the test namespace, but I'll leave the namespace.
+
+```
+kubectl delete service nginx-service
+kubectl delete deployment nginx-try
+
+# Just check they have gone
+kubectl get services
+kubectl get pods
+```
+
+## Summary
+
+Kubernetes is a big topic, I've tried to give a sort of overview here, but with some simple practical examples.
+Clearly tinkering around with microk8s and namespaces, services, deployments and pods is a start.
+
+I think the biggest thing to wrap your head around is the 'network nature' of Kubernetes, the separate concepts of:
+- Nodes that actually run things
+- Pods that are groupings of container/images that execute on the Nodes
+- Services that act almost like a point of entry/load balancer across the set of pods
+- Namespaces that provide some degree of logical isolation and consistent naming/addressing via DNS (from the Services)
+
+The other important part is that namespaces are not fixed rigid bounds.
+
+There is [more detailed worked example](BuildAndDeployAContainer.md) available - with is more on the developer side.
+
+I won't do that much on the practical operations side of Kubernetes, like draining, scaling, securing. But I might
+do some more bits on monitoring.
