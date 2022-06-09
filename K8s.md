@@ -164,6 +164,11 @@ So typically from your host and a vm called `primary` you can use:
 microk8s config | multipass transfer - primary:.kube/config
 ```
 
+To see what images that are in the local registry in the `microk8s-vm` you can use from the host machine:
+```
+microk8s ctr images ls
+```
+
 So this pulls the configuration out of the `microk8s-vm` cluster and then pipes it into a multipass command that
 transfers stdin content into the `primary` vm and then stores it in a file called `~/.kube/config.
 
@@ -176,6 +181,7 @@ k get pods
 ```
 
 #### Basic kubectl concepts and commands
+
 When a Kubernetes _cluster_ is created it is created with a number of **nodes** these are the 'machines' that
 will actually run your applications (microservices).
 
@@ -191,7 +197,14 @@ Finally, a number of 'images/containers' can be bundled and placed into a **pod*
 one or more **nodes**. Now your application can actually run. It is also possible to create **namespaces** for the
 **pods** to run in.
 
+It is the **deployment** that defines the characteristics of how a pod behaves. 
+
 Those applications can then be exposed via **services** which expose ports in a configurable manner.
+
+You can get command line completion when using bash with:
+```
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+```
 
 Now the basic `kubectl` commands involved in getting information about the above cluster concepts.
 
@@ -237,7 +250,8 @@ kubectl get services
 
 ```
 
-Some additional `kubectl` commands that will be useful:
+Some additional `kubectl` commands that will be useful, these are more for run time.
+
 ```
 # Get the logs out of a pod - remember kubectl get pods --selector=app=spring-boot
 # Will give you the full pod name.
@@ -257,4 +271,105 @@ kubectl cp junk spring-boot-5dcb4777d7-bq2ks:/tmp
 
 # To get loads of infor out about the cluster
 kubectl cluster-info dump
+```
+
+To control and alter a node, i.e. should a node be taken out for maintenance.
+```
+# No longer schedulable for work
+kubectl cordon microk8s-vm
+
+# Drain of all processing ready to take off line
+kubectl drain microk8s-vm
+```
+
+### One way of getting images into microk8s
+
+It's not actually necessary to have the images/container loaded into the microk8s registry, you can just
+use images from docker hub or other registries. Clearly then you will need to provide some form of authentication
+credentials to microk8s to all it to pull those images (maybe I'll look at this later).
+
+But for local development of code and images, working on your own development machine and being able to do all
+this locally really speeds development up. You could just run the image in docker, unless you are deploying
+multiple images/containers or trying out something like prometheus/grafana. Or maybe you need a 'server' running
+kafka and lots of other infrastructural type stuff. Then employing microk8s makes a bit more sense.
+
+There are several ways to get docker images into the local registry in microk8s - which is ideal for development
+and local testing.
+
+```
+# First on the host machine see what is enabled
+microk8s status
+
+# Then enable things like registry, dns, linkerd
+microk8s enable registry
+
+# You can also check with, you should see container-registry listed
+kubectl get pods --all-namespaces
+```
+
+With this, a local docker/container registry will be made available on port 32000.
+
+Now let's use that separate **primary** vm that was set up earlier and has docker installed.
+```
+# Lets just get a version of nginx down from docker.io
+docker pull nginx
+
+#So that is now in the registry in the vm
+docker images
+```
+
+Now if we want to push that (or any other image - even one we've created), we need to tag it.
+```
+# This is how we tag an image in this local registry
+docker tag nginx:latest 172.19.167.170:32000/nginx:primary
+
+# Or we could pull a specific version
+docker pull nginx:1.22
+
+# Then tag that
+docker tag nginx:1.22 172.19.167.170:32000/nginx:1.22
+```
+
+You may be thinking why use that IP address in there and what's it for.
+We need either a hostname (microk8s-vm.mshome.net in Windows) or the actual IP address or how to connect to
+that registry.
+Tag the image in our local repo (because we plan to push that image out to that host later).
+
+The next step is to push those tagged images out to that microk8s-vm (on 172.19.167.170).
+```
+# Push the tagged image over
+docker push 172.19.167.170:32000/nginx:1.22
+
+# But you'll probably have an issue here, something like
+# 'Get "https://172.19.167.170:32000/v2/": http: server gave HTTP response to HTTPS client'
+```
+
+You will need to edit the `/etc/docker/daemon.json` file and add the following:
+```
+{
+          "insecure-registries" : ["172.19.167.170:32000"]
+}
+```
+
+Then restart docker `sudo systemctl restart docker`.
+
+Now clearly if you used 'Kaniko' or 'BuildAh' you may not have these issues (you may have different ones).
+
+But now you have either pulled or created an image in one machines repository, tagged it and then pushed it out
+into the microk8s local repository.
+
+### Listing the images in a repository
+
+If we were using docker as set up in the **primary** vm we'd just use `docker images` from a bash shell in
+**primary**.
+
+But we'd like to see what images are in the local registry in the microk8s vm. This uses _containerd_ to hold those images.
+So from a host command line you can use:
+```
+# This is the command to interact with containerd
+microk8s ctr help
+
+# To get the images
+microk8s ctr images ls
+
 ```
