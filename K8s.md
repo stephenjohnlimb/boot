@@ -24,12 +24,12 @@ But as I plan to do some work with kubernetes; I'll have a go with [microk8s on 
 and [microk8s on MacOS](https://ubuntu.com/tutorials/install-microk8s-on-mac-os). There are other
 solutions like minikube and k3s, but I thought I'd have a go with microk8s.
 
-But to do this you need to remember that Kubernetes is really very linux focussed. First, we need to really
+To do this you need to remember that Kubernetes is really very linux focussed. First, we need to really
 give ourselves the ability and knowledge to work with linux virtual machines.
 So quite a bit of the initial focus here is on Multipass.
 
 #### Set up on Windows
-Just follow the instructions in [this link](https://ubuntu.com/tutorials/install-microk8s-on-window).
+Just follow the instructions in [this link](https://ubuntu.com/tutorials/install-microk8s-on-window) for installation.
 
 Microk8s on Windows and MacOs both use **Multipass**; so in short it uses virtualization to set up an Ubuntu
 machine with Microk8s on it. It also adds in a few commands on your host machine (either Windows or Mac).
@@ -151,10 +151,10 @@ directly. I'm not sure that I'm that keen on this spring-boot image building pro
 seems to be pulling down the known world to do a build.
 
 ## Kubectl
-This next part is really all about `kubectl` - this is just a short list of the command options, it really is a bit
+This next part is really all about `kubectl` - this is just a short list of the command options, `kubectl` really is a bit
 of a beast. But then Kubernetes has a number of aspects to it that need managing.
 
-I've tried to put the commands in some sort of order that is logical to me.
+I've tried to put the commands in some sort of order that is logical for me.
 
 #### Common kubectl commands and setup
 
@@ -195,13 +195,13 @@ k get pods
 
 ### Basic Kubernetes concepts
 
-When a Kubernetes _cluster_ is created it is created with a number of **nodes** these are the 'machines' that
+When a Kubernetes _cluster_ is created it is created with a number of **nodes**; these are the 'machines' that
 will actually run your applications (microservices).
 
 When you do your application builds and  package your application into an 'image/container' (maybe a docker image), it
 has your application but also a thin layer of operating system and additional components you configured.
 
-For `kubectl` to be able to manipulate and configure actions within the kubernetes _cluster_ that _cluster_ needs
+For `kubectl` to be able to manipulate and configure actions within the kubernetes _cluster_; that _cluster_ needs
 what is called a _control plane_.
 
 This _control plane_ communicates with software running on the **node**; that is called a 'Kubelet'.
@@ -221,7 +221,7 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 
 #### Some Kubectl commands
 
-Now the basic `kubectl` commands involved in getting information about the above cluster concepts.
+Now the basic `kubectl` commands involved in getting information about the cluster concepts above.
 
 ```
 # To view the kubernetes configuration
@@ -263,21 +263,22 @@ kubectl get pod spring-boot-5dcb4777d7-bq2ks -o yaml
 # To get lots of details on a running pod
 kubectl describe pods spring-boot-5dcb4777d7-bq2ks
 
-# Now services
+# Now services, a service name - will also be registered within kube-dns
 kubectl get services
-
 ```
 
 So take stock of those commands above, they focus on:
 - Overall configuration
 - The Nodes
 - The Pods
+- The Namespaces
 - The Services
 
 To recap.
 - Nodes are the machine stuff runs on.
 - Pods have one or more containers/images running in them
 - Services expose the applications in the images running in pods on the nodes via TCP ports.
+- Pods/Services are bound into a namespace
 
 
 #### Some Kubectl commands more focused on runtime
@@ -322,7 +323,7 @@ deploying them in microk8s. But here is a short primer first.
 
 It's not actually necessary to have the images/container loaded into the microk8s registry, you can just
 use images from docker hub or other registries. Clearly then you will need to provide some form of authentication
-credentials to microk8s to all it to pull those images (maybe I'll look at this later).
+credentials to microk8s to allow it to pull those images from a remote registry (maybe I'll look at this later).
 
 But for local development of code and images, working on your own development machine and being able to do all
 this locally really speeds development up. You could just run the image in docker, unless you are deploying
@@ -337,7 +338,7 @@ and local testing.
 microk8s status
 
 # Then enable things like registry, dns, linkerd
-microk8s enable registry
+microk8s enable registry, dns
 
 # You can also check with, you should see container-registry listed
 kubectl get pods --all-namespaces
@@ -350,7 +351,7 @@ Now let's use that separate **primary** vm that was set up earlier and has docke
 # Lets just get a version of nginx down from docker.io
 docker pull nginx
 
-#So that is now in the registry in the vm
+# Show that is now in the registry in the vm
 docker images
 ```
 
@@ -366,7 +367,7 @@ docker pull nginx:1.22
 docker tag nginx:1.22 172.19.167.170:32000/nginx:1.22
 ```
 
-You may be thinking why use that IP address in there and what's it for.
+You may be thinking why use that IP address in there and what's it for?
 We need either a hostname (microk8s-vm.mshome.net in Windows) or the actual IP address or how to connect to
 that registry.
 Tag the image in our local repo (because we plan to push that image out to that host later).
@@ -411,7 +412,6 @@ microk8s ctr help
 
 # To get the images
 microk8s ctr images ls
-
 ```
 
 #### Deploying that image
@@ -454,19 +454,19 @@ But also via host port 31145!
 **So what does this mean? How can I see something**
 
 OK, let's recap again.
-- We've taken nginx version 1.22 and pushed into microk8s registry
-- We've then created a simple deployment called **nginx-try** and run that up in a pod
+- We've taken nginx version 1.22 and pushed into microk8s (local) registry
+- We've then created a simple **deployment** called **nginx-try** and run that up in a pod
 - This means that nginx in that pod is listening on port 80 (that's how it was build by the developer)
-- Now by using **kubectl expose deployment nginx-try** we've exposed port 80.
+- Now by using **kubectl expose deployment nginx-try** we've exposed port 80 via port 9095.
 - The important bits here are **--port 9095 --target-port 80** and **type NodePort**
-- Finally, we give it a name of **nginx-service**
+- Finally, we've given it a name of **nginx-service**
 
 You may be expecting to be able to go to your local host browser and enter:
 - _http://localhost:80_
 - Or _http://localhost:9095_
 
-Or something like that, but no I'm afraid not. It's a bit more complex than that.
-Kubernetes has its own internal networking stuff going on. So lets un pick it a bit.
+Or something like that, **but no I'm afraid not**. It's a bit more complex than that.
+Kubernetes has its own internal networking stuff going on. So lets un-pick it a bit.
 
 Here is an example from my machine.
 ```
@@ -475,12 +475,13 @@ kubectl get services
 
 # NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
 # kubernetes      ClusterIP   10.152.183.1     <none>        443/TCP          2d23h
-= nginx-service   NodePort    10.152.183.182   <none>        9095:31145/TCP   3s
+# nginx-service   NodePort    10.152.183.182   <none>        9095:31145/TCP   3s
 ```
 
-So now if I get a bash session on `microk8s-vm` (that's where Kubernetes is running), now I can see if
+So now if I get a bash session on `microk8s-vm` (that's where the Kubernetes cluster is running), now I can see if
 I can see the nginx welcome page. For this I need to use the `CLUSTER-IP` of **10.152.183.182**, this will
-be available to me in the Kubernetes cluster (but only withing that cluster).
+be available to me in the Kubernetes cluster (but only within that cluster). I could have just used **ClusterIP**
+and it would still have been exposed within the cluster on IP **10.152.183.182**, but not exposed on the host.
 
 Now I can try a `curl http://10.152.183.182:9095` and I get this:
 ```
@@ -513,7 +514,7 @@ So success, if I was wiring lots of services together I'd be good to go. But as 
 I have actually asked Kubernetes to expose this out to the host. For this Kubernetes has used a dynamic port number
 (in this case 31145).
 
-So you are probably thinking great, _http://localhost:31145_ will now work. Well **NO**, that's because I'm running
+So you are probably thinking great, _http://localhost:31145_ will now work. Well **No!** That's because I'm running
 microk8s-vm inside a virtual machine via multipass.
 
 Now that virtual machine currently has an IP address of **172.19.167.170** so to use a local browser and see the same
@@ -532,7 +533,8 @@ kubectl delete services nginx-service
 
 This will leave the pod running, but just remove the exposure.
 
-Lots more [details here](https://kubernetes.io/docs/concepts/services-networking/connect-applications-service/).
+Lots more [details here](https://kubernetes.io/docs/concepts/services-networking/connect-applications-service/) about
+all this.
 
 ## Namespaces
 So far I've only deployed images/containers to pods in the **default** namespace, you can check what namespaces
@@ -540,6 +542,10 @@ have been defined with `kubectl get namespaces --show-labels`. There is more tha
 by microk8s and some of the add-ons that have been enabled.
 
 Lets create a **test** namespace.
+
+But what is a 'context' - it is just a mechanism and sort of working set of namespaces your `kubectl` will
+interact with.
+
 ```
 # Create the namespace
 kubectl create namespace test
@@ -560,7 +566,7 @@ kubectl config view
 kubectl config use-context test
 
 # This means we're now using the test namespace in the text context
-# this will show now pods running - as we are in the test context
+# This will show now pods running (there won't be any yet) - as we are in the test context
 kubectl get pods
 
 # If you flip back to use microk8s
@@ -570,6 +576,8 @@ kubectl get pods
 
 # Flip back again
 kubectl config use-context test
+
+# So hopefully you can now see the point of a 'context'
 
 # Now use same command to deploy and expose the nginx container as we did in the 'default' namespace
 kubectl create deployment nginx-try --image=localhost:32000/nginx:1.22
@@ -595,7 +603,7 @@ As soon as you expose your deployment of pods as a 'service' in our case above _
 will create a DNS entry for that service. Kubernetes then deals with traffic coming into that service and
 distributes it to one the pods that runs on one of your nodes.
 
-So from within the Kubernetes cluster you have a build-in DNS mechanism (within your namespace), just
+So from within the Kubernetes cluster you have a built-in DNS mechanism (within your namespace), just
 use the service name you gave your service.
 
 Now to address services in other namespaces (decide if that's a good or a bad idea yourself), you can
@@ -630,7 +638,9 @@ kubectl get pods
 ## Summary
 
 Kubernetes is a big topic, I've tried to give a sort of overview here, but with some simple practical examples.
-Clearly tinkering around with microk8s and namespaces, services, deployments and pods is a start.
+Clearly tinkering around with microk8s and namespaces, services, deployments and pods is a start,
+but it's quite along way from production. We'd need to think about security, isolation, observations (linkerd/istio),
+failing nodes/pods, etc.
 
 I think the biggest thing to wrap your head around is the 'network nature' of Kubernetes, the separate concepts of:
 - Nodes that actually run things

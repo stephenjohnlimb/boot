@@ -56,8 +56,8 @@ two or more services. The wire-format is defined to be compact and technology ne
 (meaning you can exchange structured data between different programming languages).
 
 One of the main advantages of publishing a 'specification' of your data structure is to employ
-[PACT](https://pact.io/) this formalises the relationship between the _provider_ and the _consumer_ of the
-of data that must conform to that specification.
+[PACT](https://pact.io/); this formalises the relationship between the _provider_ and the _consumer_ of the
+of data structure that must conform to that specification.
 
 ### Lambdas
 I've also tinkered around with a bit of tail recursion (because I found that interesting).
