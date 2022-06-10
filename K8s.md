@@ -650,6 +650,8 @@ I think the biggest thing to wrap your head around is the 'network nature' of Ku
 
 The other important part is that namespaces are not fixed rigid bounds.
 
+I've not covered secrets, mounted volumes/environment variables/config maps yet.
+
 There is [more detailed worked example](BuildAndDeployAContainer.md) available - with is more on the developer side.
 
 I won't do that much on the practical operations side of Kubernetes, like draining, scaling, securing. But I might

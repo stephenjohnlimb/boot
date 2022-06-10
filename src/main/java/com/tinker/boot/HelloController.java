@@ -17,7 +17,8 @@ public class HelloController {
 	@Timed(value = "greeting.time", description = "Time taken to return greeting")
 	public String index() throws InterruptedException
 	{
-		Thread.sleep(new Random().nextLong(1000));
-		return "Greetings from Spring Boot!";
+		var injectedByEnvironment = System.getenv("TEST_ENV_VAR");
+		Thread.sleep(new Random().nextInt(1000));
+		return "Greetings from Spring Boot! Checking an env var is [" + injectedByEnvironment + "]";
 	}
 }

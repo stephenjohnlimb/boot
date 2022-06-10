@@ -97,6 +97,9 @@ docker ps -a
 docker stop nginxk8s
 ```
 
+### Another Spring example
+[Readme](src/main/microk8s/spring-boot/README.md) for more details on dockerizing a spring boot app.
+
 #### Taking stock
 While this section has been quite short (intentionally), this page has covered:
 - Using an existing docker image as a base using 'FROM'
@@ -121,7 +124,7 @@ There are more commands, but I've found these to be the most important.
 
 ## Deploying nginxk8s to microk8s
 While it might be a bit repetitive, as I've already covered this [before](K8s.md), I'm going to reinforce it again.
-First get a bash session on your **primary** that's the vm with docker installed, the microk8s-vm is running on
+First get a bash session on your **primary**; that's the vm with docker installed, the microk8s-vm is running on
 **172.19.167.170** in a vm.
 
 So starting from the host powershell/bash (and assuming you have the src directory mounted)
@@ -170,7 +173,7 @@ kubectl get service nginxk8s-service -o yaml
 ```
 From that you can see the form and layout of a configuration file that could be `applied`.
 
-So rather than using multiple kubectl commands, you could just use a file
+So rather than using multiple `kubectl` commands, you could just use a file
 [nginx-for-k8s.yml](src/main/microk8s/nginx/nginx-for-k8s.yml) the contents are shown below:
 ```
 apiVersion: v1
