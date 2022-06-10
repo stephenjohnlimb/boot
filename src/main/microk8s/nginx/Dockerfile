@@ -2,7 +2,7 @@
 FROM nginx:1.22
 LABEL maintainer="Steve Limb"
 
-### Now add in some configuration file
+### Now add in some configuration files
 COPY install /
 
 ### EOF

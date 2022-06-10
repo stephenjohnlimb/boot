@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-for-k8s
+  name: nginxk8s-service
+spec:
+  type: NodePort
+  ports:
+  - port: 9095
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-for-k8s
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-for-k8s
+  name: nginx-for-k8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-for-k8s
+  template:
+    metadata:
+      labels:
+        app: nginx-for-k8s
+    spec:
+      containers:
+      - image: localhost:32000/nginxk8s:primary
+        name: nginxk8s
+        ports:
+        - containerPort: 80
