@@ -34,3 +34,25 @@ spec:
         name: spring-boot
         ports:
         - containerPort: 8080
+        env:
+          # Define the environment variable
+          - name: TEST_ENV_VAR # Notice that the case is different here
+            # from the key name in the ConfigMap.
+            valueFrom:
+              configMapKeyRef:
+                name: spring-boot-map # The ConfigMap this value comes from.
+                key: check_value # The key to fetch, this will get mapped into TEST_ENV_VAR.
+        volumeMounts:
+          - name: config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+        # You set volumes at the Pod level, then mount them into containers inside that Pod
+        - name: config
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: spring-boot-map
+            # An array of keys from the ConfigMap to create as files
+            items:
+              - key: "check.properties"
+                path: "check.properties"

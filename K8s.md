@@ -118,6 +118,10 @@ There is a separate [set of examples that show building and deploying a containe
 
 You can do that by installing docker or buildAh etc.
 ```
+# You can also install with snap - but apt maybe be better
+# sudo snap install docker
+# sudo groupadd docker
+
 sudo apt-get install docker
 sudo usermod -a -G docker ubuntu
 exit
@@ -391,6 +395,8 @@ You will need to edit the `/etc/docker/daemon.json` file and add the following:
 Then restart docker and push again:
 ```
 sudo systemctl restart docker
+
+# OR sudo snap restart docker if snap was used to install docker
 docker push 172.19.167.170:32000/nginx:1.22
 ```
 

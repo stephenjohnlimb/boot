@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-boot-map
+data:
+  # property-like keys; each key maps to a simple value
+  check_value: "Injected Value"
+
+  # file-like keys
+  check.properties: |
+    color.good=purple
+    color.bad=yellow
