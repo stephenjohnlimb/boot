@@ -45,11 +45,11 @@ If you look in [HelloController.java](../../java/com/tinker/boot/HelloController
 you will see that the code looks for an environment variable.
 ```
 public String index() throws InterruptedException
-	{
-		var injectedByEnvironment = System.getenv("TEST_ENV_VAR");
-		Thread.sleep(new Random().nextInt(1000));
-		return "Greetings from Spring Boot! Checking an env var is [" + injectedByEnvironment + "]";
-	}
+{
+    var injectedByEnvironment = System.getenv("TEST_ENV_VAR");
+    Thread.sleep(new Random().nextInt(1000));
+    return "Greetings from Spring Boot! Checking an env var is [" + injectedByEnvironment + "]";
+}
 ```
 
 Now we're going to use a kubernetes manifest and a **ConfigMap** to set that environment variable.
@@ -70,14 +70,14 @@ env:
 ```
 
 This bit of configuration in the manifest, is stating that there will be an environment
-variable called **TEST_ENV_VAR** and it's value will come from a (yet to be defined) 
+variable called **TEST_ENV_VAR** and its value will come from a (yet to be defined) 
 **ConfigMap**, and it will be 'keyed' of a value called 'check_value'.
 
 ### ConfigMap
 The configuration map can have a variety of bits of configuration within it. For now,
 I'll just focus on the environment variables.
 
-Take a look in [the example config map](spring-boot-example1.yml), specifically looks at:
+I'll now define the [`configMap`](spring-boot-example1.yml), specifically it looks like:
 ```
 apiVersion: v1
 kind: ConfigMap
@@ -91,20 +91,23 @@ data:
 Once, this **configMap** manifest has been applied `kubectl apply -f src/main/microk8s/spring-boot/spring-boot-example1.yml`
 and the spring boot app deployed `kubectl apply -f src/main/microk8s/spring-boot/spring-boot-for-k8s.yml`, the value will be
 available.
-So now `http://192.168.64.2:30599` will result in the following being displayed:
+
+You can check the configmap has deployed with `kubectl get configmaps`.
+
+So now `http://{YOUR_MICROKS-MV_IP}:30599` will result in the following being displayed:
 ```
 Greetings from Spring Boot! Checking an env var is [Injected Value]
 ```
 
 #### What's point of all that?
-Basically it means that you have decoupled the application code from its configuration.
+Basically it means that you have decoupled the application code and its configuration.
 This means that now we can create any number of **configMap** manifest files and select
 the one we want to use separately from the application.
 This will become more useful once we move on to use **helm**, as that enables us to use
 manifest files in template form.
 
 ### Property files
-You may be noticed the following configuration in [the example config map](spring-boot-example1.yml).
+You may have noticed the following configuration in [the example config map](spring-boot-example1.yml).
 ```
 # file-like keys
   check.properties: |
@@ -112,15 +115,14 @@ You may be noticed the following configuration in [the example config map](sprin
     color.bad=yellow
 ```
 
-You may have also noticed this:
+You may have also noticed this in [spring-boot deployment](spring-boot-for-k8s.yml):
 ```
 ...
        volumeMounts:
           - name: config
             mountPath: "/config"
             readOnly: true
-      volumes:
-        # You set volumes at the Pod level, then mount them into containers inside that Pod
+      volumes:        
         - name: config
           configMap:
             # Provide the name of the ConfigMap you want to mount.
@@ -134,7 +136,7 @@ You may have also noticed this:
 This is a mechanism that enables small sets of property values to be made available as
 a file to an application in a known location.
 
-This will create a file `/config/check.properties` with contents:
+This will look like a file called `/config/check.properties` with contents:
 ```
 color.good=purple
 color.bad=yellow
@@ -149,3 +151,78 @@ kubectl exec --stdin --tty spring-boot-for-k8s-7b559c7989-jdlrd -- cat /config/c
 ```
 
 Now it is possible to use those properties from within your deployed spring-boot application.
+
+## Updating the Spring Boot App
+Now there is a mechanism to provide a set of properties in a _file_ we can update the
+spring-boot application to read those.
+
+I've modified the Controller and added `CheckPropertiesExample`.
+```
+@RestController
+public class HelloController {
+
+	@Autowired
+	private CheckPropertiesExample checkPropertiesExample;
+
+	/**
+	 * Now map for a REST GET and also time and count the calls.
+	 */
+	@GetMapping("/")
+	@Counted(value = "greeting.count", description = "Number of times GET request is made")
+	@Timed(value = "greeting.time", description = "Time taken to return greeting")
+	public String index() throws InterruptedException
+	{
+		var currentDir = System.getProperty("user.dir");
+
+		var injectedByEnvironment = System.getenv("TEST_ENV_VAR");
+		Thread.sleep(new Random().nextInt(1000));
+		return currentDir +": Greetings from Spring Boot! Checking an env var is [" + injectedByEnvironment + "] from properties " + checkPropertiesExample.getValues();
+	}
+}
+```
+
+Here is that `CheckPropertiesExample` java class:
+```
+@Configuration
+@PropertySource("classpath:check.properties")
+@PropertySource(value = "file:config/check.properties", ignoreResourceNotFound = true)
+public class CheckPropertiesExample {
+
+  @Autowired
+  private Environment env;
+
+  public List<String> getValues()
+  {
+    return List.of(env.getProperty("color.good"), env.getProperty("color.bad"));
+  }
+}
+```
+
+Also added in a file called `resources/check.properties` with values:
+```
+#Place holder with some default values
+color.good=green
+color.bad=red
+```
+
+So we will use this as a 'fall back', that's why that `@PropertySource("classpath:check.properties")` is defined
+first. Then we use the `@PropertySource(value = "file:config/check.properties", ignoreResourceNotFound = true)`.
+
+So it is the second directive that is optional and when we hook that in via the `configMap`
+we should get the values 'purple and 'yellow'. But if the file/configMap is not
+wired in then, we will just stick with the defaults.
+
+#### Note
+You can get really carried away with optional defaults, layers of fall backs.
+Experience tells me that you need to temper your enthusiasm for this, you also need to
+drive for consistency in your approach (hard with bigger teams).
+
+While 'Environment Variables' are very good for injecting configuration settings and values,
+there are in effect a little like **global variables/constants**. It is very easy for these
+to be misused and abused.
+
+The defaults, possible sources of properties and environment variables need to be tightly controlled
+and well documented. This is especially true to enable devops/operations teams to understand how to
+deploy dockerized applications.
+
+## Summary

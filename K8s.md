@@ -141,14 +141,22 @@ docker images
 If you wanted Java 17/maven then follow these instructions.
 ```
 sudo apt install openjdk-17-jdk openjdk-17-jre
-sudo apt install maven
+
+# You need a fairly current version of maven to work with Java 17
+curl -o maven-2-8-6.tar.gz https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+sudo tar -xzvf maven-2-8-6.tar.gz -C/opt
+rm maven-2-8-6.tar.gz
+
+echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> ~/.bashrc
+echo "export MAVEN_HOME=/opt/apache-maven-3.8.6"  >> ~/.bashrc
+echo "export PATH=$MAVEN_HOME/bin:$PATH" >> ~/.bashrc 
 ```
 
 This means that you can actually do full builds with files from your workspace but actually in an ubuntu virtual machine.
 For example:
 ```
 cd ~/src/boot
-sh ./mvnw spring-boot:build-image
+mvn spring-boot:build-image
 ```
 Assuming your project has the mvnw wrapper, you can then do a full build of a spring boot app and get a docker image out,
 directly. I'm not sure that I'm that keen on this spring-boot image building process, seems a bit 'magic' and also

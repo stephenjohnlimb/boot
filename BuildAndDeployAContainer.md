@@ -7,6 +7,10 @@ spring-boot to create a docker image of a spring-boot app.
 But here I'm going to focus more on the `Dockerfile` itself and alter the content in the standard `nginx` image by
 using it; thereby extending it to create a new image.
 
+There is a much more detailed [spring boot example](src/main/microk8s/spring-boot/README.md),
+this not only covers creating a Dockerfile, but also includes how to use `configMaps` for
+environment variables and property files.
+
 ### The Docker file
 So for this example I am going to create a minimal docker file, this is based on the nginx image.
 That is a key concept in docker, basically you are best building layers on top of other images. This
