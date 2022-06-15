@@ -26,6 +26,8 @@ So this project is a bit of a random wandering around technologies I'm intereste
 I thought the packaging of this application in docker might involve writing a `Docker` file; but it turns
 out that with these later versions of spring boot I can just run `mvn spring-boot:build-image`.
 But goodness, me is the image that is produced **big**.
+See [Spring Boot Dockerfile](src/main/microk8s/spring-boot/README.md) for an actual docker file use
+to create a spring-boot docker image and deploy it.
 
 Now assuming you have docker installed, you can then just run that docker image with the following command:
 `docker run -p 9091:8080 -t boot:0.0.1-SNAPSHOT`.
@@ -39,6 +41,7 @@ pulled out the bits I need all into one place.
 So here are the credits (if I've missed anyone let me know; and I'll add the attribution).
 
 - [Spring](https://start.spring.io/)
+- [Kubernetes](https://kubernetes.io/docs/concepts/)
 - [AVRO](https://avro.apache.org/docs/current/gettingstartedjava.html)
 - [CockroachDB](https://www.cockroachlabs.com/docs/cockroachcloud/quickstart?filters=local)
 - [Spring ORM/CockroachDB](https://www.cockroachlabs.com/docs/stable/example-apps.html)
@@ -88,11 +91,11 @@ There is a:
 - Anagram Detector
 
 ### Spring
-Used [Spring initializr](https://start.spring.io/) to create a simple app, could have used a maven archetype, or just done it all by hand.
+I used [Spring initializr](https://start.spring.io/) to create a simple app, could have used a maven archetype, or just done it all by hand.
 
 ### Add in some REST
-I've added a single **Controller** that just returns the standard "Hello, world". The point of this project is **not** to
-create lots of application functionality; but to touch lots of different technologies. Then actually hook them all together,
+I've added a single **Controller** that just returns the standard "Hello, world" (though this has been mutated through examples!).
+The point of this project is **not** to create lots of application functionality; but to touch lots of different technologies. Then actually hook them all together,
 try them all out. So it is 'full stack' in terms of technology - I may even include some _Vue.js_ later.
 
 You can now run `BootApplication` and then use a browser to access `http://localhost:8080/` where you
