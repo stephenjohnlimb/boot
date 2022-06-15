@@ -39,6 +39,70 @@ Interestingly, I forgot to expose port 8080 initially, so to check this on an im
 docker inspect --format='{{.Config.ExposedPorts}}' spring-boot:latest
 ```
 
+#### Port and IP addresses
+There are different ways of providing ingress from your local machine into the cluster.
+
+Originally my `spring-boot-for-k8s.yml` had the following:
+```
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: spring-boot-for-k8s
+  name: spring-boot-service
+spec:
+  type: NodePort
+  ports:
+  - port: 9095
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: spring-boot-for-k8s
+```
+
+I then altered it to be:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: spring-boot-for-k8s
+  name: spring-boot-service
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: spring-boot-for-k8s
+```
+
+Now I get this:
+```
+kubectl get services
+# NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
+# kubernetes            ClusterIP      10.152.183.1     <none>          443/TCP        70d
+# spring-boot-service   LoadBalancer   10.152.183.187   192.168.64.50   80:30275/TCP   10m
+```
+
+Notice that now an external IP address has been provided, I've also altered the port to use 80,
+this is because I now have a dedicated host based IP address available to me.
+
+To ge this to work, I did have to alter my microk8s configuration by enabling a few more add-ons.
+```
+microk8s enable ingress metallb:192.168.64.50-192.168.64.100
+```
+
+This is the key bit to enabling the `LoadBalancer` **type** in the **Service** definition.
+
+Hpefully now you can see where that new IP address of `192.168.64.50` came from. It's from the 
+`metallb` add-on - specifically from the pool of IP addresses I gave it.
+
+Now I can actually go to `http://192.168.64.50` with a browser and get the spring boot response.
+
 ## Environment variables and property files
 
 If you look in [HelloController.java](../../java/com/tinker/boot/HelloController.java)

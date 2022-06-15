@@ -5,9 +5,10 @@ metadata:
     app: spring-boot-for-k8s
   name: spring-boot-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
-  - port: 9095
+  - name: http
+    port: 80
     protocol: TCP
     targetPort: 8080
   selector:
