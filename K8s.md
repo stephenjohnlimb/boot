@@ -354,7 +354,42 @@ microk8s enable registry, dns
 
 # You can also check with, you should see container-registry listed
 kubectl get pods --all-namespaces
+
+# If you enable prometheus you can get get metrics gathered
+microk8s enable prometheus
 ```
+
+If you want to take a look at those metrics on you local browser, you can
+use the following (from your host machine)
+```
+kbectl port-forward -n monitoring service/prometheus-k8s --address 0.0.0.0 9090:9090
+```
+
+This just gives a temporary port mapping, from your local machine on port 9090 to the
+prometheus service running in microk8s.
+
+Note if you want to get a shell session on to this pod you can with:
+```
+kubectl exec --stdin --tty -n monitoring prometheus-k8s-0 -- /bin/sh
+
+# Then you can have a look at the prometheus.yml
+more /etc/prometheus/prometheus.yml
+```
+
+Have a look at the deployment configuration:
+```
+kubectl get deployments -n monitoring
+kubectl describe deployment -n monitoring prometheus-adapter
+kubectl describe deployment -n monitoring prometheus-operator
+```
+
+It is also possible to get access to the 'grafana' instance running in microk8s as well:
+```
+kubectl port-forward -n monitoring service/grafana --address 0.0.0.0 3000:3000
+```
+
+Then just use a local browser on your host machine on `http://localhost:3000` and use
+`admin\admin` as the username and password. You will then have to set up some graphs and charts.
 
 With this, a local docker/container registry will be made available on port 32000.
 
