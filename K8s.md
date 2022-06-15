@@ -149,7 +149,7 @@ rm maven-2-8-6.tar.gz
 
 echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> ~/.bashrc
 echo "export MAVEN_HOME=/opt/apache-maven-3.8.6"  >> ~/.bashrc
-echo "export PATH=$MAVEN_HOME/bin:$PATH" >> ~/.bashrc 
+echo "export PATH=\$MAVEN_HOME/bin:\$PATH" >> ~/.bashrc 
 ```
 
 This means that you can actually do full builds with files from your workspace but actually in an ubuntu virtual machine.

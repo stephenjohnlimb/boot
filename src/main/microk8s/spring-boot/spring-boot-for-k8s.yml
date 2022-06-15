@@ -34,6 +34,14 @@ spec:
         name: spring-boot
         ports:
         - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
         env:
           # Define the environment variable
           - name: TEST_ENV_VAR # Notice that the case is different here
@@ -43,12 +51,17 @@ spec:
                 name: spring-boot-map # The ConfigMap this value comes from.
                 key: check_value # The key to fetch, this will get mapped into TEST_ENV_VAR.
         volumeMounts:
-          - name: config
-            mountPath: "/config"
+          - name: check-config
+            mountPath: "/config/check.properties"
+            subPath: "check.properties"
+            readOnly: true
+          - name: application-config
+            mountPath: "/config/application.properties"
+            subPath: "application.properties"
             readOnly: true
       volumes:
         # You set volumes at the Pod level, then mount them into containers inside that Pod
-        - name: config
+        - name: check-config
           configMap:
             # Provide the name of the ConfigMap you want to mount.
             name: spring-boot-map
@@ -56,3 +69,11 @@ spec:
             items:
               - key: "check.properties"
                 path: "check.properties"
+        - name: application-config
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: spring-boot-map
+            # An array of keys from the ConfigMap to create as files
+            items:
+              - key: "application.properties"
+                path: "application.properties"

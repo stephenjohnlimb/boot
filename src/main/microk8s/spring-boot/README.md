@@ -212,6 +212,79 @@ So it is the second directive that is optional and when we hook that in via the 
 we should get the values 'purple and 'yellow'. But if the file/configMap is not
 wired in then, we will just stick with the defaults.
 
+### Application.properties
+With Spring-boot it is also possible to ensure that the application is shutdown gracefully.
+To do this you need to add some additional configuration to `application.properties`.
+
+Add this to the configMap `spring-boot-map`
+```
+application.properties: |
+    server.shutdown=graceful
+    management.endpoints.web.exposure.include=*
+```
+
+It is then necessary to modify the `deployment configuration` with:
+```
+...
+        volumeMounts:
+            - name: check-config
+            mountPath: "/config/check.properties"
+            subPath: "check.properties"
+            readOnly: true
+            - name: application-config
+            mountPath: "/config/application.properties"
+            subPath: "application.properties"
+            readOnly: true
+    
+    volumes:
+    # You set volumes at the Pod level, then mount them into containers inside that Pod
+    - name: check-config
+    configMap:
+    # Provide the name of the ConfigMap you want to mount.
+    name: spring-boot-map
+    # An array of keys from the ConfigMap to create as files
+    items:
+      - key: "check.properties"
+        path: "check.properties"
+    - name: application-config
+    configMap:
+    # Provide the name of the ConfigMap you want to mount.
+    name: spring-boot-map
+    # An array of keys from the ConfigMap to create as files
+    items:
+      - key: "application.properties"
+        path: "application.properties"
+```
+While this is a bit more verbose (i.e. it seems to be necessary to reference 'application.properties' quite a bit),
+it does mean that we have now configured the spring-boot application for a gracefully shut down.
+
+So now do a redeployment of the spring-boot application:
+```
+kubectl apply -f src/main/microk8s/spring-boot/spring-boot-for-k8s.yml
+```
+
+You can do a running log check with:
+```
+kubectl get pods                                    
+# NAME                                   READY   STATUS    RESTARTS   AGE
+# spring-boot-for-k8s-59b8c49c55-t97ts   1/1     Running   0          15h
+
+kubectl logs -f spring-boot-for-k8s-59b8c49c55-t97ts
+```
+
+Now in a separate shell session, you can stop/delete the deployment and check the running logs to ensure
+that the shutdown is graceful.
+```
+kubectl delete deployment spring-boot-for-k8s
+```
+
+Now check that shell session where you were following the logs, you should see:
+```
+# 2022-06-15 08:47:25.917  INFO 1 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+# 2022-06-15 08:47:25.957  INFO 1 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+```
+
+
 #### Note
 You can get really carried away with optional defaults, layers of fall backs.
 Experience tells me that you need to temper your enthusiasm for this, you also need to
@@ -226,3 +299,8 @@ and well documented. This is especially true to enable devops/operations teams t
 deploy dockerized applications.
 
 ## Summary
+This short example of setting up and configuration a spring-boot application and building a docker image is fairly straight forward.
+It also shows how you can inject both environment variables and small configuration directives in the form of 
+configuration items that can be consumed as 'files'.
+
+It has not covered 'secrets' or 'persistent volumes'.

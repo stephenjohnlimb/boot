@@ -6,6 +6,11 @@ data:
   # property-like keys; each key maps to a simple value
   check_value: "Injected Value"
 
+  # file like spring-boot application configuration.
+  application.properties: |
+    server.shutdown=graceful
+    management.endpoints.web.exposure.include=*
+
   # file-like keys
   check.properties: |
     color.good=purple
