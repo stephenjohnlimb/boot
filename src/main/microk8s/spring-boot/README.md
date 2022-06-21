@@ -91,17 +91,33 @@ kubectl get services
 Notice that now an external IP address has been provided, I've also altered the port to use 80,
 this is because I now have a dedicated host based IP address available to me.
 
-To ge this to work, I did have to alter my microk8s configuration by enabling a few more add-ons.
+To get this to work, I did have to alter my microk8s configuration by enabling a few more add-ons.
 ```
+# For my MAC I used
 microk8s enable ingress metallb:192.168.64.50-192.168.64.100
+
+# For windows I used
+microk8s enable ingress metallb:172.24.174.50-172.24.174.100
+
+# This really just comes down to how the virtual machines and networking is setup via microk8s
+```
+
+On my Windows PC I get these results:
+```
+kubectl get services
+# NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)          AGE
+# kubernetes            ClusterIP      10.152.183.1     <none>          443/TCP          15d
+# spring-boot-service   LoadBalancer   10.152.183.231   172.24.174.50   80:32029/TCP     11d
 ```
 
 This is the key bit to enabling the `LoadBalancer` **type** in the **Service** definition.
 
-Hpefully now you can see where that new IP address of `192.168.64.50` came from. It's from the 
-`metallb` add-on - specifically from the pool of IP addresses I gave it.
+Hopefully, now you can see where that new IP address of `192.168.64.50/172.24.174.50` came from. It's from the 
+`metallb` add-on - specifically from the pool of IP addresses I gave it. But the range needs to fit how your
+host machine works with microk8s.
 
-Now I can actually go to `http://192.168.64.50` with a browser and get the spring boot response.
+Now I can actually go to `http://192.168.64.50` (on my Mac) or `http://172.24.174.50` (on windows)
+with a browser and get the spring boot response.
 
 ## Environment variables and property files
 
