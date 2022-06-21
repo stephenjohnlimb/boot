@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "boot-chart.fullname" . }}
+  labels:
+    {{- include "boot-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "boot-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "boot-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "boot-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.service.targetPort }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ .Values.service.targetPort }}
+          env:
+            # Define the environment variable
+            - name: TEST_ENV_VAR # Notice that the case is different here
+              # from the key name in the ConfigMap.
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-configmap # The ConfigMap this value comes from.
+                  key: check_value # The key to fetch, this will get mapped into TEST_ENV_VAR.
+          volumeMounts:
+            - name: check-config
+              mountPath: "/config/check.properties"
+              subPath: "check.properties"
+              readOnly: true
+            - name: application-config
+              mountPath: "/config/application.properties"
+              subPath: "application.properties"
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        # You set volumes at the Pod level, then mount them into containers inside that Pod
+        - name: check-config
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: {{ .Release.Name }}-configmap
+            # An array of keys from the ConfigMap to create as files
+            items:
+              - key: "check.properties"
+                path: "check.properties"
+        - name: application-config
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: {{ .Release.Name }}-configmap
+            # An array of keys from the ConfigMap to create as files
+            items:
+              - key: "application.properties"
+                path: "application.properties"
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
