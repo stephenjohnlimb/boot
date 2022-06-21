@@ -18,7 +18,7 @@ See [K8s on how I've started with MicroK8s](K8s.md), there are lots of other alt
 I've picked to have a go with. All of this information is available in and around the internet, I'm mainly documenting
 this for me. I find the process of writing and explaining how all this hangs together very useful for learning.
 It also provides me with a reference for the future as I use lots of different technologies some become stale through
-lack of use.
+lack of use. 
 
 So this project is a bit of a random wandering around technologies I'm interested in.
 
@@ -33,6 +33,8 @@ Now assuming you have docker installed, you can then just run that docker image 
 `docker run -p 9091:8080 -t boot:0.0.1-SNAPSHOT`.
 
 You can then go to the browser on `http://localhost:9091` and see the `Greetings from Spring Boot!` message.
+
+I have reused this example with [Helm and helm Charts](Helm.md), to show how helm can be used for kubernetes deployments.
 
 #### This repository - what have I added and why
 This repo - contains a number of code/configuration examples from a variety of sources. I've just
