@@ -4,12 +4,18 @@ Helm is a sort of package manager/templating mechanism for Kubernetes.
 
 The [spring-boot manifest](src/main/microk8s/spring-boot/spring-boot-for-k8s.yml) and
 [example config map](src/main/microk8s/spring-boot/spring-boot-example1.yml) are basically
-manifest files for Kubernetes.
+manifest files for Kubernetes. It is this that helm refers to as a 'Chart'.
+
+These 'charts' can be packaged and held in a repository and subsequently downloaded and used. It is important
+to check the 'values' (i.e. the configuration you want) before just deploying.
 
 Later on in this document I'll go through the redeployment of the `spring-boot` application I have already
 developed the kubernetes manifest for; but via helm charts.
 
+Once you 'install/upgrade' a helm defined application, helm will mark this as a release.
+
 ### Templating
+
 Now while these are great for defining infrastructure as code, you will find over time you need to 
 update and modify these with new versions of images, or maybe add additional config map entries.
 But more importantly you may want to take most of those manifest and use them in different 'environments';
@@ -32,10 +38,46 @@ Once a chart has been used deploy an application into a cluster; it will be impo
 This becomes more important as the number of applications and environments proliferate.
 
 Typical commands that support this are:
-- `helm install`
-- `helm upgrade`
+- `helm env` - shows your local configuration
+- `helm list` - lists the application that are deployed
+- `helm list --all-namespaces` - all apps in all name spaces
+- `helm list --namespace {name-space}` - just list apps in a specific name space
+- `helm install {app-name} {chart-name}`
+- `helm install {app-name} {chart-name} --namespace {name-space}` - using a specific name space
+- `helm install {app-name} {chart-name} --values {file-name}` - using a different sets of helm values.yaml
+- `helm upgrade {app-name} {chart-name} ...` - just upgrades the release of the app
+- `helm get all {app-name}` - gives a very details of the kubernetes hooks/manifests that are in effect for the app
+- `helm get hooks {app-name}` - just the hooks from above
+- `hel get manifest {app-name` - just the kubernetes manifests
+- `helm uninstall {app-name}` - just removes the application
 - `helm status`
 - `helm history`
+
+#### Repositories
+
+As mentioned earlier it is possible to access a range of repositories, this is done through the `helm repo` command.
+- `helm repo list` - list the repositories that have been made accessible to your helm configuration.
+- `helm repo add {repository-name} {url}` - just adds the repository to your helm configuration
+- `helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/` - example of adding a repo
+- `helm repo remove {repository-name}` - just remove that repo from your list of repositories
+- `helm search repo {key-word}` - searches the repositories
+- `helm search repo dashboard` - example of repo search, if you added dashboard above, it will be searched
+
+How to download a chart from a repo:
+```
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+helm search repo dashboard
+# NAME                                            CHART VERSION   APP VERSION     DESCRIPTION
+# kubernetes-dashboard/kubernetes-dashboard       5.7.0           2.6.0           General-purpose web UI for Kubernetes clusters
+
+helm pull kubernetes-dashboard/kubernetes-dashboard
+# You can now see that kubernetes-dashboard-5.7.0.tgz has been pulled down
+
+# Alternatively you can get helm to download and untar it for you
+helm pull kubernetes-dashboard/kubernetes-dashboard --untar --untardir check
+
+# This will create a directory and untar the chart into it.
+```
 
 ### Install on MacOS
 
@@ -226,6 +268,9 @@ But let's check the files with `lint` and have a dry run first:
 helm lint ./boot-chart
  
 helm install testrun --dry-run --debug ./boot-chart --set service.type=NodePort
+
+# You can also see what the chart would resolve to in one view
+helm show all ./boot-chart
 ```
 
 This basically just expands all the template directives and results in a set of kubernetes manifests.
