@@ -11,6 +11,7 @@ There are a number of documents explaining bits and bobs, here is a set of quick
 - [Building and Deploying a container](BuildAndDeployAContainer.md)
 - [Kubernetes persistent volume](src/main/microk8s/persistence/README.md)
 - [More detail on building and deploying a spring boot application](src/main/microk8s/spring-boot/README.md)
+- [Some details on how to use helm charts](Helm.md)
 - [Configuring metrics gathering](Metrics.md)
 
 ### Purpose
@@ -56,6 +57,7 @@ So here are the credits (if I've missed anyone let me know; and I'll add the att
 
 - [Spring](https://start.spring.io/)
 - [Kubernetes](https://kubernetes.io/docs/concepts/)
+- [Helm](https://helm.sh/)
 - [AVRO](https://avro.apache.org/docs/current/gettingstartedjava.html)
 - [CockroachDB](https://www.cockroachlabs.com/docs/cockroachcloud/quickstart?filters=local)
 - [Spring ORM/CockroachDB](https://www.cockroachlabs.com/docs/stable/example-apps.html)
