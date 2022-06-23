@@ -44,6 +44,8 @@ You can now see the new volume added.
 ### Making a claim on that physical space
 
 See [volume-claim](volume-claim.yaml) below for making a claim on that space.
+Now you can apply that with `kubectl apply -f ./volume-claim.yaml`
+
 ```
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -58,7 +60,7 @@ spec:
       storage: 3Gi
 ```
 
-Now you can list the claims:
+List the claims:
 ```
 kubectl get pvc
 # NAME            STATUS   VOLUME           CAPACITY   ACCESS MODES   STORAGECLASS   AGE
@@ -67,9 +69,9 @@ kubectl get pvc
 
 ### An example of using the volume
 The file [nginx-deployment](nginx-deployment.yaml) shows how a stock nginx image can be
-used but the directory that it uses to serve content is mounted from the `volume`.
+used, but the directory that it uses to serve content is mounted from the `volume`.
 
-The key part of this deployment is as follows:
+The important part of this deployment manifest is as follows:
 ```
 ...
     spec:
