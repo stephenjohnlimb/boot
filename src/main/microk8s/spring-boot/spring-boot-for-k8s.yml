@@ -51,6 +51,18 @@ spec:
               configMapKeyRef:
                 name: spring-boot-map # The ConfigMap this value comes from.
                 key: check_value # The key to fetch, this will get mapped into TEST_ENV_VAR.
+          - name: SECRET_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: username-password
+                key: username
+                optional: true
+          - name: SECRET_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: username-password
+                key: password
+                optional: true
         volumeMounts:
           - name: check-config
             mountPath: "/config/check.properties"

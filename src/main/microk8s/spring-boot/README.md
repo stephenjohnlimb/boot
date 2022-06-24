@@ -6,6 +6,7 @@ thought I'd have a go at creating a spring boot docker image based on alpine.
 
 You need to be in the 'root' of this project and then run the following command:
 ```
+mvn clean install
 docker build -f src/main/microk8s/spring-boot/Dockerfile -t spring-boot .
 ```
 This will then use the [Dockerfile](Dockerfile) which is pretty simple:
@@ -24,8 +25,12 @@ repository in microk8s-vm.
 
 On your **primary** vm
 ```
-docker tag spring-boot:latest 172.19.167.170:32000/spring-boot:latest
-docker push 172.19.167.170:32000/spring-boot:latest
+# Check the IP of the microks-vm (as on my Windows this changes at reboot)
+MICROK8S=$(cat ~/.kube/config | grep server | cut -f3 -d: | sed 's/\/\///g')
+echo $MICROK8S
+
+docker tag spring-boot:latest $MICROK8S:32000/spring-boot:latest
+docker push $MICROK8S:32000/spring-boot:latest
 kubectl apply -f src/main/microk8s/spring-boot/spring-boot-for-k8s.yml
 
 # Now list the services to get the host port
@@ -38,6 +43,9 @@ Interestingly, I forgot to expose port 8080 initially, so to check this on an im
 ```
 docker inspect --format='{{.Config.ExposedPorts}}' spring-boot:latest
 ```
+
+I also added some code and configuration to access optional secrets via ENVIRONMENT VARIABLES,
+see [simple secret configuration](../secrets/README.md) for more details.
 
 #### Port and IP addresses
 There are different ways of providing ingress from your local machine into the cluster.

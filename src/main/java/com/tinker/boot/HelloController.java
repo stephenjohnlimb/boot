@@ -6,10 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @RestController
 public class HelloController {
+
+	private final static String SECRET_USERNAME_ENV_VAR = "SECRET_USERNAME";
+	private final static String SECRET_PASSWORD_ENV_VAR = "SECRET_PASSWORD";
+	private final static String TEST_ENV_VAR = "TEST_ENV_VAR";
 
 	@Autowired
 	private CheckPropertiesExample checkPropertiesExample;
@@ -24,8 +30,12 @@ public class HelloController {
 	{
 		var currentDir = System.getProperty("user.dir");
 
-		var injectedByEnvironment = System.getenv("TEST_ENV_VAR");
+		var envVarValues = List.of(TEST_ENV_VAR, SECRET_USERNAME_ENV_VAR, SECRET_PASSWORD_ENV_VAR)
+						.stream()
+						.map(System::getenv)
+						.collect(Collectors.toList());
+
 		Thread.sleep(new Random().nextInt(1000));
-		return currentDir +": Greetings from Spring Boot! Checking an env var is [" + injectedByEnvironment + "] from properties " + checkPropertiesExample.getValues();
+		return currentDir +": Greetings from Spring Boot! Env Vars are " + envVarValues + " from properties " + checkPropertiesExample.getValues();
 	}
 }
