@@ -122,13 +122,18 @@ You can do that by installing docker or buildAh etc.
 # sudo snap install docker
 # sudo groupadd docker
 
-sudo apt-get install docker
+sudo apt update
+sudo apt install docker.io
 sudo usermod -a -G docker ubuntu
 exit
 
 # Now maybe mount a local file system and log in again
 multipass mount src primary:/home/ubuntu/src
 multipass shell primary
+
+# You can then try the following
+docker run -it ubuntu bash
+# then exist from that docker within the vm.
 
 # Now navigate to where you have a docker file and trigger a build
 # There is a full worked example of this in the link above.
@@ -175,6 +180,7 @@ but if you want to use kubectl from within a fairly current ubuntu, you can just
 
 ```
 sudo snap install kubectl --classic
+mkdir ~.kube
 ```
 
 But how does that specific virtual machine (host) with kubectl 'know' which kubernetes cluster to look at and work with?
