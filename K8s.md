@@ -29,7 +29,7 @@ give ourselves the ability and knowledge to work with linux virtual machines.
 So quite a bit of the initial focus here is on Multipass.
 
 #### Set up on Windows
-Just follow the instructions in [this link](https://ubuntu.com/tutorials/install-microk8s-on-window) for installation.
+Just follow the instructions in [this link](https://ubuntu.com/tutorials/install-microk8s-on-windows) for installation.
 
 Microk8s on Windows and MacOs both use **Multipass**; so in short it uses virtualization to set up an Ubuntu
 machine with Microk8s on it. It also adds in a few commands on your host machine (either Windows or Mac).
