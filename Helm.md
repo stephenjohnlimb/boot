@@ -366,3 +366,8 @@ To remove that application completely you can use:
 ```
 helm uninstall testrun
 ```
+
+## Summary
+This was a bit long, but Kubernetes and helm are quite **big**.
+With this in mind there is something else I wanted to deploy in Kubernetes and that is Kafka.
+See [Bitnami/Kafka and Kubernetes](BitnamiKafkaHelm.md) for details on this.

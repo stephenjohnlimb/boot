@@ -7,12 +7,14 @@ There are a number of documents explaining bits and bobs, here is a set of quick
 
 - [Cucumber examples](Cucumber.md)
 - [Setup of CockroachDB](CockroachDB.md)
+- [Windows Networking with Multipass](WindowsNetworkWithMultipass.md)
 - [Setup of Microk8s](K8s.md)
 - [Building and Deploying a container](BuildAndDeployAContainer.md)
 - [Kubernetes persistent volume](src/main/microk8s/persistence/README.md)
 - [kubernetes secrets just for developers](src/main/microk8s/secrets/README.md)
 - [More detail on building and deploying a spring boot application](src/main/microk8s/spring-boot/README.md)
 - [Some details on how to use helm charts](Helm.md)
+- [Bitnami/Kafka and Kubernetes](BitnamiKafkaHelm.md)
 - [Configuring metrics gathering](Metrics.md)
 
 ### Purpose
