@@ -12,16 +12,20 @@ So I'm going to try and see if I can configure a separate network.
 
 #### Command Line to create a new virtual switch
 
-Use a powershell `As Administrator` and do the following (I'm using 192.18.0.1/24 here).
+Use a powershell `As Administrator` and do the following (I'm using 192.168.64.1/24 here).
 ```
 New-VMSwitch -SwitchName "NATSwitch" -SwitchType Internal
-New-NetIPAddress -IPAddress 192.168.0.1 -PrefixLength 24 -InterfaceAlias "vEthernet (NATSwitch)"
-New-NetNAT -Name "NATNetwork" -InternalIPInterfaceAddressPrefix 192.168.0.0/24
+New-NetIPAddress -IPAddress 192.168.64.1 -PrefixLength 24 -InterfaceAlias "vEthernet (NATSwitch)"
+New-NetNAT -Name "NATNetwork" -InternalIPInterfaceAddressPrefix 192.168.64.0/24
 
 # To check these values you can look in the Hyper-V Manager in Windows or
 Get-NetAdapter
 Get-NetIPAddress
 Get-NetNat
+
+# You can remove them with
+Remove-NetNat NATNetwork
+Remove-NetIPAddress 192.168.64.1
 ```
 
 #### Upgrade multipass
@@ -61,7 +65,7 @@ ip -br address show scope global
 ```
 
 #### Note if you already have a VM
-So if you already have a couple of VM's and don;t want to recreate them:
+So if you already have a couple of VM's and don't want to recreate them:
 - Just stop the VM
 - Go to Hyper-V Manager and select each VM in turn
 - Go to Settings and Add Hardware
@@ -74,13 +78,15 @@ So far, I've got a new virtual machine with two ethernet adaptors available but 
 (on the Default Switch) working. The other is connected to my new `NATSwitch` but that's not yet
 configured in the Linux VM. So I'll do that now.
 
+So for my `microk8s-vm` I've added this, for the `primary` VM I used `192.168.64.3`
+
 ```
 sudo vi /etc/netplan/50-cloud-init.yaml
 # Now add in the following:
 ...
 eth1:
-    addresses: [192.168.0.2/24]
-    gateway4: 192.168.0.1
+    addresses: [192.168.64.2/24]
+    gateway4: 192.168.64.1
     nameservers:
         addresses: [8.8.8.8, 1.1.1.1]
 ...
@@ -101,8 +107,8 @@ network:
                 macaddress: 52:54:00:25:99:d5
             set-name: eth0
         eth1:
-            addresses: [192.168.0.2/24]
-            gateway4: 192.168.0.1
+            addresses: [192.168.64.2/24]
+            gateway4: 192.168.64.1
             nameservers:
                 addresses: [8.8.8.8, 1.1.1.1]
     version: 2
@@ -121,14 +127,52 @@ multipass list
 # Name                    State             IPv4             Image
 # primary                 Running           172.28.134.101   Ubuntu 20.04 LTS
 #                                           172.17.0.1
+#                                           192.168.64.3
 # microk8s-vm             Running           172.28.140.238   Ubuntu 18.04 LTS
 #                                           10.1.37.0
 #                                           10.1.37.1
 # refreshing-moray        Running           172.28.129.65    Ubuntu 20.04 LTS
 #                                           172.28.128.162
-#                                           192.168.0.2
+#                                           192.168.64.2
 ```
 
 ## Summary
-It looks like I can now - rejig my virtual machines in Multipass and give them two network
-interfaces, one on the Default Switch and one on my `NATSwitch` where I can then give them fixed IP addresses.
+So on Windows with the `Default Switch` running in Hyper-V you get easy access but changin IP addresses.
+By adding a second network adaptor and defining a second virtual switch in the private IP range of
+`192.168.64.0/24` and using `manual` mode with `netplan` you can get some fix IP addresses.
+
+Now when you come to use `Microk8s` and specifically when you want to expose services that are running inside
+your kubernetes cluster you can either use `NodePort` or `LoadBalancer`. The `ClusterIP` option will not expose
+a service outside the cluster.
+
+So why not just `NodePort` with IP address of `192.168.64.2` - well that's because Kubernetes will allocate a dynamic
+port number in the range of `3xxxx`. Which is fine for some things, but not for others.
+
+So if you configure `microk8s enable metallb:192.168.64.50-192.168.64.100` and you alter your `Service` like this:
+```
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: spring-boot-for-k8s
+  name: spring-boot-service
+spec:
+  type: LoadBalancer
+  # Note just testing out if I can fix an IP in here with metallb
+  # Yes you can - but it must be within the range you gave to metallb
+  # i.e. I gave range: microk8s enable ingress metallb:192.168.64.50-192.168.64.100
+  loadBalancerIP: 192.168.64.99
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: spring-boot-for-k8s
+```
+
+The important bit here; is that `metallb` will allow you specify the load balancer IP (as long as it is in the range
+you gave it when you enabled it via microk8s).
+
+This now means that a new known IP address using a specific port, running in the kubernetes cluster is exposed to my
+host PC. Now I can just go to my normal PC browser on http://192.168.64.99 and interact with the service.

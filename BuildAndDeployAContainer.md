@@ -129,7 +129,7 @@ There are more commands, but I've found these to be the most important.
 ## Deploying nginxk8s to microk8s
 While it might be a bit repetitive, as I've already covered this [before](K8s.md), I'm going to reinforce it again.
 First get a bash session on your **primary**; that's the vm with docker installed, the microk8s-vm is running on
-**172.19.167.170** in a vm.
+**192.168.64.2** in a vm.
 
 So starting from the host powershell/bash (and assuming you have the src directory mounted)
 ```
@@ -141,10 +141,10 @@ cd src/boot/src/main/microk8s/nginx/
 docker build -t nginxk8s .
 
 # Tag that image ready to push into the microk8s-vm registry
-docker tag nginxk8s:latest 172.19.167.170:32000/nginxk8s:primary
+docker tag nginxk8s:latest 192.168.64.2:32000/nginxk8s:primary
 
 # Now push it from the local registry to the microk8s-vm registry
-docker push 172.19.167.170:32000/nginxk8s:primary
+docker push 192.168.64.2:32000/nginxk8s:primary
 
 # Now lets plan to deploy in the 'test' namespace
 kubectl config use-context test
@@ -160,7 +160,7 @@ kubectl get services
 # nginxk8s-service   NodePort   10.152.183.20   <none>        9095:30891/TCP   9s
  
 ```
-Now on you host machine, you can access that port via the `microk8s-vm` i.e. `http://172.19.167.170:30891/`
+Now on you host machine, you can access that port via the `microk8s-vm` i.e. `http://192.168.64.2:30891/`
 on a Windows host you can actually use `http://microk8s-vm.mshome.net:30891/` as an entry is made in the hosts.ics file
 for you when the multipass virtual machines are started.
 

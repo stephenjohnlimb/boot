@@ -6,6 +6,10 @@ metadata:
     {{- include "boot-chart.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  # Note just testing out if I can fix an IP in here with metallb
+  # Yes you can - but it must be within the range you gave to metallb
+  # i.e. I gave range: microk8s enable ingress metallb:192.168.64.50-192.168.64.100
+  loadBalancerIP: 192.168.64.99
   ports:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort }}

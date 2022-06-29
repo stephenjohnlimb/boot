@@ -37,6 +37,8 @@ These are:
 - multipass
 - microk8s
 
+Note I had to update my Windows Multipass from 1.3 to 1.8 to get the additional 'network' functionality.
+
 So to get a shell session on your microk8s-vm you can use the following command:
 - multipass shell microk8s-vm
 
@@ -73,6 +75,11 @@ On Windows you will get some additional entries in `C:\WINDOWS\System32\drivers\
 172.19.167.170 microk8s-vm.mshome.net # 2022 6 3 15 9 49 33 141
 172.19.161.255 primary.mshome.net # 2022 6 3 15 9 49 33 135
 ```
+
+But note, these IP addresses tend to change when you reboot your host PC. So that's a bit of a pain.
+To get around this I added a second network adaptor to my multipass vm's; see 
+[Windows networking with multipass](WindowsNetworkWithMultipass.md) for more details.
+
 These will be based on the virtual machine names you employed.
 
 #### Set up on MacOs
@@ -94,6 +101,8 @@ be unmounted with the `umount` option. But once you have mounted once, even if t
 is remounted.
 
 Now lets say we need a new vm for a little experiment; we can use the following command:
+
+See [Windows Networking](WindowsNetworkWithMultipass.md) if you want to add additional networks.
 
 ```
 multipass launch --name primary 20.04 --disk 20G
@@ -194,6 +203,9 @@ So typically from your host and a vm called `primary` you can use this command:
 ```
 microk8s config | multipass transfer - primary:.kube/config
 ```
+
+If you fix the secondary IP address for your microk8s-vm - you can just set this once to `192.168.64.2`
+(assuming you used the same addresses I did).
 
 To see what images that are in the local registry in the `microk8s-vm` you can use from the host machine:
 ```
@@ -409,15 +421,17 @@ docker images
 ```
 
 Now if we want to push that (or any other image - even one we've created), we need to tag it.
+
+Note this is assuming your `microk8s` is running on `192.168.64.2`.
 ```
 # This is how we tag an image in this local registry
-docker tag nginx:latest 172.19.167.170:32000/nginx:primary
+docker tag nginx:latest 192.168.64.2:32000/nginx:primary
 
 # Or we could pull a specific version
 docker pull nginx:1.22
 
 # Then tag that
-docker tag nginx:1.22 172.19.167.170:32000/nginx:1.22
+docker tag nginx:1.22 192.168.64.2:32000/nginx:1.22
 ```
 
 You may be thinking why use that IP address in there and what's it for?
@@ -428,16 +442,16 @@ Tag the image in our local repo (because we plan to push that image out to that 
 The next step is to push those tagged images out to that microk8s-vm (on 172.19.167.170).
 ```
 # Push the tagged image over
-docker push 172.19.167.170:32000/nginx:1.22
+docker push 192.168.64.2:32000/nginx:1.22
 
 # But you'll probably have an issue here, something like
-# 'Get "https://172.19.167.170:32000/v2/": http: server gave HTTP response to HTTPS client'
+# 'Get "https://192.168.64.2:32000/v2/": http: server gave HTTP response to HTTPS client'
 ```
 
 You will need to edit the `/etc/docker/daemon.json` file and add the following:
 ```
 {
-          "insecure-registries" : ["172.19.167.170:32000"]
+          "insecure-registries" : ["192.168.64.2:32000"]
 }
 ```
 
@@ -446,7 +460,7 @@ Then restart docker and push again:
 sudo systemctl restart docker
 
 # OR sudo snap restart docker if snap was used to install docker
-docker push 172.19.167.170:32000/nginx:1.22
+docker push 192.168.64.2:32000/nginx:1.22
 ```
 
 Now clearly if you used 'Kaniko' or 'BuildAh' you may not have these issues (you may have different ones).
@@ -576,10 +590,16 @@ Now that virtual machine currently has an IP address of **172.19.167.170** so to
 content that was served from within the Kubernetes cluster I need to use:
 - http://172.19.167.170:31145/
 
+But If I added that secondary networking capability I could also use:
+- http://192.168.62.2:31145/
+
 **Finally, success!**
 
 One of the important bits here is deciding **how** you would like to _expose_ the node, this is done with **type**
 on the `kubectl expose` command, this can be **LoadBalancer, ClusterIP** or **NodePort**.
+
+But see [Windows Networking with Multipass](WindowsNetworkWithMultipass.md) on how we can actually get ourselves
+to known range of IP addresses to work with and how we can reserve specific IP address for a particular service.
 
 To remove the exposed service use:
 ```
