@@ -16,7 +16,7 @@ It's basically a bit of tech for passing messages via topics and queues (a bit l
 RabbitMQ, IBM MQ, etc.). But it does have a few extra feature like configurable persistence
 of messages for a number of consumers. So unlike most message queueing systems it is
 possible for messages to stay in a queue just waiting for a consumer to consume them.
-it's then up to that consumer to 'move their pointer on' so they don;t process the same message. This is
+it's then up to that consumer to 'move their pointer on' so they don't process the same message. This is
 quite unlike JMS/IBM-MQ - where a message is consumed off the queue (normally when a transaction is committed).
 
 Under the hood it uses a bit of tech called 'Zookeeper' but that may get replaced in future releases.
@@ -61,8 +61,7 @@ helm install my-release bitnami/kafka \
 But this did not quite work out as the metallb Service setting of loadBalancerIPS was not set.
 So I think I'll need to pull down the chart and modify it a little.
 
-Now I'm not helm expert (as I'm new to it and writing this), but:
-[The external service access template (svc-external-access.yaml)](src/main/helm/kafka/templates/svc-external-access.yaml) is using:
+Now I'm not helm expert (as I'm new to it and writing this), but svc-external-access.yaml - has this bit of code
 ```
 {{- if and (not (empty $root.Values.externalAccess.service.loadBalancerIPs)) (eq (len $root.Values.externalAccess.service.loadBalancerIPs) $replicaCount) }}
   loadBalancerIP: {{ index $root.Values.externalAccess.service.loadBalancerIPs $i }}
@@ -97,7 +96,7 @@ But having done this sort of stuff for 30 year or more - it's not a surprise, yo
 work out how to debug alien tech - until it is no longer alien - just a dysfunctional 'friend'.
 
 #### As a modified helm chart
-So lets pull the bitnami/kafka chart down and modify the values.
+So lets pull the bitnami/kafka chart down and modify the values i.e. [customValue.yaml](src/main/helm/kafka/customValues.yaml).
 ```
 # CD to src\boot\src\main\helm
 # Pull and unpack
@@ -136,19 +135,19 @@ By following:
 - [Windows Networking and Multipass](WindowsNetworkWithMultipass.md)
 - [Helm Setup](Helm.md)
 - This page configuring Bitnami/Kafka
-- 
+
 I have:
 - My local Windows machine with access to a specific local private network via Hyper-V
 - My Mac already has access to a known fixed local private network via hyperkit
 - I have a vm called `primary` and one running `Microk8s` called `microk8s-vm`
-- I have enabled `metallb` in `microk8s` to provide services on 192.168.64-50-192.168.64-100
+- I have enabled `metallb` in `microk8s` to provide services on IP range: 192.168.64-50-192.168.64-100
 - Helm has been installed on:
   - The Windows Host
   - The MacOS Host
   - The `primary` Ubuntu vm.
 - Now I have installed Kafka with:
-  - Use of an external persistent volume - so messages are retained, even if I remove the deployment
-  - A known exposed IP address `192.168.64.90` as an externally accessible to by Host PC into the Kakfa cluster in `microk8s`
+  - Use of an external persistent volume - so messages are retained, even if I remove the deployment and reinstall
+  - A known exposed IP address `192.168.64.90` as an externally accessible by Host PC into the Kakfa cluster in `microk8s`
 
 All I need to do now is try sending some messages into kafka via a `topic` and getting them out again!
 
@@ -167,20 +166,20 @@ See [Kafkacat](https://docs.confluent.io/4.0.0/app-development/kafkacat-usage.ht
 This will give us a client to be able to access our kafka cluster from our `primary` vm, this is outside of the
 kubernetes cluster.
 
-But I also want to show how we can access it from with the cluster.
+But I also want to show how we can access it from within the cluster.
 
-Note you need a client for testing (you can use the bitnami one - but I wanted to try a stock one with `kafkacat`):
+Note you need a client for testing (you can use the bitnami one - but I wanted to try a stock one with 
+a bit of software called `kafkacat`):
 ```
-# I've downloaded this simple K8S manifest for deploying a single ubuntu image.
+# I've downloaded this simple K8S manifest for deploying a single ubuntu image and added to this repo.
 kubectl apply -f src/main/microk8s/ubuntu/ubuntu-deployment.yaml
 kubectl get pods
 # NAME                                   READY   STATUS    RESTARTS   AGE
 # my-release-kafka-0                     1/1     Running   2          40m
-# my-release-kafka-client                1/1     Running   0          22h
 # my-release-zookeeper-0                 1/1     Running   0          40m
 # ubuntu-7b57dfc485-bmlw9                1/1     Running   0          22h
 
-# Now you can see that new ubuntu pod running in the same cluster as kakfa
+# Now you can see that new ubuntu pod running in the same K8S cluster as the kakfa cluster
 
 # To get a session
 kubectl exec --stdin --tty ubuntu-7b57dfc485-bmlw9 -- /bin/bash
@@ -191,7 +190,7 @@ apt-get install kafkacat
 
 # Now lets see if we can contact the kafka broker
 # Note that the broker has a DNS address for the service (remember we used the default 9092 for 'client')
-# 'default' is our namespace and 'my-release' is the name we gave when deploying via helm 
+# 'default' is our namespace and 'my-release' is the name we gave when deploying kafka via helm 
 kafkacat -L -b my-release-kafka.default.svc.cluster.local:9092 -t test-topic
 
 # The response is a bit low level!
@@ -216,12 +215,15 @@ kafkacat -L -b 192.168.64.90:9094 -t test-topic
 #     partition 0, leader 0, replicas: 0, isrs: 0
 ```
 
+So this is access from within the `microk8s` cluster and also from outside to the same kafka cluster running in
+`microk8s`.
+
 #### Sending a Receiving
 Finally, lets send some message from our test ubuntu pod and pull them out via our `primary` Hyper-V vm.
 
 On the ubuntu pod:
 ```
-# To get on to it (from your host PC)
+# To get on to the pod in the microk8s cluster (from your host PC)
 kubectl exec --stdin --tty ubuntu-7b57dfc485-bmlw9 -- /bin/bash
 
 # Lets produce some messages
@@ -235,10 +237,10 @@ First Message
 
 On the `primary` vm:
 ```
-# To get on to it (from your host PC)
+# To get on to 'primary' vm (from your host PC)
 multipass shell primary
 
-# Lets Consumer some messages
+# Lets Consume some messages - but note the IP and the port - this the external access service.
 kafkacat -C -b 192.168.64.90:9094 -t test-topic
 First Message
 % Reached end of topic test-topic [0] at offset 1
@@ -252,6 +254,28 @@ If you stop your consumer kafkacat (use ctrl-C) in the `primary`vm and then run 
 
 What do you expect - surprise - you get all the messages again!
 
-that's the rub with Kafka, the data on the topics is persistent unless you update your counter position as a named
+That's the rub with Kafka, the data on the topics is persistent unless you update your counter position as a named
 consumer. Though you can set a 'lifetime' for the message retention period.
 
+## Summary
+I've found this exercise quite interesting, a bit frustrating, insightful and now have a much better understanding
+of how to go about debugging helm charts. Like most 'declarative templating languages' all is great for simple stuff
+but when you look a bit deeper there's some 'imperative loopy stuff going on'.
+
+Also like most configurable stuff, the number of options and possibilities for configuration leads to complexity.
+This really caught me out with the **--set** options. Perhaps there is some small print somewhere that tells me about this.
+
+But as a developer - I really want to get coding my Java app to produce and consume messages.
+That's the next and final phase for this github repo.
+
+### Coming next
+Spring-boot applications that connect to Kafka running in my `microk8s` cluster. But here's the rub.
+
+I want to be able to:
+- Create a Spring-boot client to consume messages
+- Create a Spring-boot producer that produces message
+
+But I want to be able to develop and debug them on my PC/Mac just as a java app running in an IntelliJ IDE,
+but then package them into a docker image and deploy them via some helm charts into the `microk8s` cluster.
+
+So that's for next week!
