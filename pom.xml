@@ -53,6 +53,19 @@
 			<version>42.3.5</version>
 		</dependency>
 
+		<!-- For trying out with kafka -->
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-streams</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+
 		<!-- Just for checking out an ORM via Spring -->
 		<dependency>
 			<groupId>jakarta.transaction</groupId>
