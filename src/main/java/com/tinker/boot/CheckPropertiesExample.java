@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * The order of these properties is important.
  * So check the class path first for default properties
- * The optionally check an external file location - but don;t fail if not there.
+ * The optionally check an external file location - but don't fail if not there.
  */
 @Configuration
 @PropertySource("classpath:check.properties")

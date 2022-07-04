@@ -8,7 +8,14 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.stream.StreamSupport;
 
-public class MessageSource {
+/**
+ * Wrapper around a kafka Consumer, that calls out to both
+ * an exceptions function Consumer and a normal processing Consumer for each
+ * incoming message it receives on a specific topic.
+ *
+ * com.tinker.kafka.KafkaTest has example of this use.
+ */
+public final class MessageSource {
 
     private final String topic;
     private final Consumer<String, String> consumer;

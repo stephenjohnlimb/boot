@@ -5,7 +5,13 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.function.Consumer;
 
-public class MessageSink implements Consumer<Message> {
+/**
+ * Just a wrapper around a Kafka message producer.
+ *
+ * This enables you to inject either a real kafka producer or a test producer.
+ * KafkaTest has more details and examples of this.
+ */
+public final class MessageSink implements Consumer<Message> {
     private final String topic;
     private final Producer<String, String> producer;
 
@@ -16,7 +22,7 @@ public class MessageSink implements Consumer<Message> {
 
     @Override
     public void accept(final Message message) {
-        ProducerRecord record = new ProducerRecord(topic, message.key(), message.value());
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, message.key(), message.value());
         producer.send(record);
     }
 }
