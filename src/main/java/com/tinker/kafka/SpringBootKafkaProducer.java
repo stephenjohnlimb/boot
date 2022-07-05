@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.function.Consumer;
+
 @Component
-public class SpringBootKafkaProducer {
+public class SpringBootKafkaProducer implements Consumer<Message> {
 
   private static String OUTGOING_TOPIC = "test-out-topic";
 
@@ -16,7 +18,8 @@ public class SpringBootKafkaProducer {
     this.kafkaTemplate = kafkaTemplate;
   }
 
-  public void sendMessage(Message message) {
+  @Override
+  public void accept(Message message) {
     kafkaTemplate.send(OUTGOING_TOPIC, message.key(), message.value());
   }
 }

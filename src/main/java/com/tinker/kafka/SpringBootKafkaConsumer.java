@@ -19,6 +19,7 @@ public class SpringBootKafkaConsumer {
   public void consume(ConsumerRecord<String, String> record) {
     Optional.of(new Message(record.key(), record.value()))
             .map(businessOperation)
-            .ifPresent(message -> producer.sendMessage(message));
+            .stream()
+            .forEach(producer);
   }
 }
