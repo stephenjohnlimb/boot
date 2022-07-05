@@ -9,13 +9,15 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.tinker</groupId>
-	<artifactId>boot</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>boot</name>
+	<artifactId>spring-boot</artifactId>
+	<version>1.0.7</version>
+	<name>spring-boot</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<java.version>17</java.version>
 		<start-class>com.tinker.boot.BootApplication</start-class>
+		<!-- We can use the artifact id and the version to tie into the docker release naming -->
+		<image.path>192.168.64.2:32000/spring-boot:${project.version}</image.path>
 	</properties>
 
 	<profiles>
@@ -26,6 +28,7 @@
 			</activation>
 			<properties>
 				<start-class>com.tinker.boot.BootApplication</start-class>
+				<image.path>192.168.64.2:32000/spring-boot:${project.version}</image.path>
 			</properties>
 		</profile>
 		<profile>
@@ -35,6 +38,7 @@
 			</activation>
 			<properties>
 				<start-class>com.tinker.kafka.SpringBootKafkaApplication</start-class>
+				<image.path>192.168.64.2:32000/kafka-boot:${project.version}</image.path>
 			</properties>
 		</profile>
 	</profiles>
@@ -212,6 +216,20 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>2.5.0</version>
+				<configuration>
+					<allowInsecureRegistries>true</allowInsecureRegistries>
+					<from>
+						<image>openjdk:17-jdk-alpine</image>
+					</from>
+					<to>
+						<image>${image.path}</image>
+					</to>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

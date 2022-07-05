@@ -14,6 +14,7 @@ There are a number of documents explaining bits and bobs, here is a set of quick
 - [kubernetes secrets just for developers](src/main/microk8s/secrets/README.md)
 - [More detail on building and deploying a spring boot application](src/main/microk8s/spring-boot/README.md)
 - [Some details on how to use helm charts](Helm.md)
+- [Using helm to deploy a Kafka Spring Boot app](src/main/microk8s/kafka-boot/README.md)
 - [Bitnami/Kafka and Kubernetes](BitnamiKafkaHelm.md)
 - [Configuring metrics gathering](Metrics.md)
 

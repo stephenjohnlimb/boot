@@ -36,6 +36,6 @@ public class HelloController {
 						.collect(Collectors.toList());
 
 		Thread.sleep(new Random().nextInt(1000));
-		return currentDir +": Greetings from Spring Boot! Env Vars are " + envVarValues + " from properties " + checkPropertiesExample.getValues();
+		return currentDir +": Many greetings from Spring-Boot! Vars are " + envVarValues + " from properties " + checkPropertiesExample.getValues();
 	}
 }
