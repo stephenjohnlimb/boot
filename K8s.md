@@ -76,6 +76,16 @@ On Windows you will get some additional entries in `C:\WINDOWS\System32\drivers\
 172.19.161.255 primary.mshome.net # 2022 6 3 15 9 49 33 135
 ```
 
+**Important - sometimes this file gets corrupted!**
+
+The solution is to either:
+- delete the file and reboot
+- use Hyper-V manager to stop your vm's and remove the entries manually
+
+Not sure why this sometimes happens on Windows - but it does - the symptom is
+`multippass start {vm-name}` just keep waiting, if you look at Hyper-V manager it shows it
+running. But if that `hosts.ics` file is corrupted the name of the vm does not resolve!
+
 But note, these IP addresses tend to change when you reboot your host PC. So that's a bit of a pain.
 To get around this I added a second network adaptor to my multipass vm's; see 
 [Windows networking with multipass](WindowsNetworkWithMultipass.md) for more details.
