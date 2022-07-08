@@ -86,6 +86,17 @@ Not sure why this sometimes happens on Windows - but it does - the symptom is
 `multippass start {vm-name}` just keep waiting, if you look at Hyper-V manager it shows it
 running. But if that `hosts.ics` file is corrupted the name of the vm does not resolve!
 
+Also, sometimes on Windows you cannot seem to stop a vm - these commands don't seem to work:
+- multipass stop primary
+- multipass stop microk8s-vm
+
+**In that case use TaskManager and find process `vmwp.exe` and terminate it.**
+
+Also, on Windows after Hibernating sometimes the IP addresses seem to get lost on the VM's.
+
+**I'm not painting a good picture here for Windows am I?**
+
+
 But note, these IP addresses tend to change when you reboot your host PC. So that's a bit of a pain.
 To get around this I added a second network adaptor to my multipass vm's; see 
 [Windows networking with multipass](WindowsNetworkWithMultipass.md) for more details.
@@ -221,6 +232,26 @@ To see what images that are in the local registry in the `microk8s-vm` you can u
 ```
 microk8s ctr images ls
 ```
+
+But a better way to see the images published is to use this mechanism below:
+```
+curl http://192.168.64.2:32000/v2/_catalog
+
+# The response will be something like this
+# {"repositories":["boot","busybox","gradle-kafka","kafka-boot","nginx","nginxk8s","spring-boot"]}
+
+# You can then go on to get a bit more detail for example
+curl http://192.168.64.2:32000/v2/spring-boot/tags/list
+# The response will be something like this
+# {"name":"spring-boot","tags":["1.0.6","primary","1.0.3","2.7.7",""2.1.2","1.0.5","latest","1.0.2","1.0.4"]}
+
+# It is then possible get the actual manifest of a particular version if you wish
+curl http://192.168.64.2:32000/v2/spring-boot/manifests/1.0.6
+# The response will contain something like this
+# Docker-Content-Digest: sha256:5249f7bccedacac591dcb54b1a017879c16223df490f25b676b7c0152c32b7f0  
+```
+
+See [Docker documentation](https://docs.docker.com/registry/spec/api/) for all the details.
 
 So this pulls the configuration out of the `microk8s-vm` cluster and then pipes it into a multipass command that
 transfers stdin content into the `primary` vm and then stores it in a file called `~/.kube/config.
