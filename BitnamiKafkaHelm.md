@@ -89,7 +89,8 @@ and found that `$root.Values.externalAccess.service.loadBalancerIPs` was empty! 
 I had imagined that setting the values with `--set externalAccess.service.loadBalancerIPS={'192.168.64.90'}` would
 be applied everywhere. **But clearly not**.
 
-So I will now use my own `customValues.yaml` file - well actually modify the one from the chart.
+So I will now use my own [`customValues.yaml`](src/main/helm/kafka/customValues.yaml) file - well actually I modified
+the one from the chart.
 
 Now maybe this is just my naivety/inexperience - but to a newcomer this is not obvious! Nor is how to debug it.
 But having done this sort of stuff for 30 year or more - it's not a surprise, you just have to be patient and
